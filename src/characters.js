@@ -28,7 +28,7 @@ function part(list, geo, color, x, y, z, o = {}) {
   const m = new THREE.Matrix4();
   m.compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(o.rx || 0, o.ry || 0, o.rz || 0)), new THREE.Vector3(...(o.s || [1, 1, 1])));
   g.applyMatrix4(m);
-  const c = new THREE.Color(color).convertSRGBToLinear();
+  const c = new THREE.Color(color); // already linear (ColorManagement)
   const arr = new Float32Array(g.attributes.position.count * 3);
   for (let i = 0; i < arr.length; i += 3) { arr[i] = c.r; arr[i + 1] = c.g; arr[i + 2] = c.b; }
   g.setAttribute('color', new THREE.BufferAttribute(arr, 3));
@@ -41,31 +41,39 @@ export function characterGeometry(look) {
   const { skin = '#f1c9a3', hair = '#3a2a22', shirt = '#c64530', style = 'short', glasses = false } = look || {};
   const L = [];
   const sph = (r, a = 16, b = 12) => new THREE.SphereGeometry(r, a, b);
+  // 콩떡: one smooth bean. upper part skin, lower part clothes.
+  const R = 0.34, CY = 0.38, SC = [1, 1.2, 0.92];
+  const split = Math.PI * 0.42;
+  part(L, new THREE.SphereGeometry(R, 36, 22, 0, Math.PI * 2, split, Math.PI - split), shirt, 0, CY, 0, { s: SC });
+  part(L, new THREE.SphereGeometry(R, 36, 22, 0, Math.PI * 2, 0, split), skin, 0, CY, 0, { s: SC });
   for (const sx of [-1, 1]) {
-    part(L, sph(0.085, 10, 8), '#2e2824', 0.09 * sx, 0.045, 0.03, { s: [1, 0.55, 1.4] });
-    part(L, new THREE.CapsuleGeometry(0.07, 0.16, 4, 8), '#4a4038', 0.09 * sx, 0.2, 0);
-    part(L, new THREE.CapsuleGeometry(0.06, 0.2, 4, 8), shirt, 0.27 * sx, 0.56, 0, { rz: 0.22 * sx });
-    part(L, sph(0.06, 10, 8), skin, 0.31 * sx, 0.4, 0.01);
+    part(L, sph(0.07, 12, 8), '#3b322c', 0.11 * sx, 0.03, 0.04, { s: [1, 0.6, 1.3] });
+    part(L, sph(0.06, 12, 8), shirt, 0.33 * sx, 0.33, 0, { s: [0.7, 1, 0.8] });
   }
-  part(L, new THREE.CapsuleGeometry(0.215, 0.22, 6, 16), shirt, 0, 0.6, 0, { s: [1, 1, 0.85] });
-  part(L, sph(0.27, 24, 18), skin, 0, 1.08, 0);
-  if (style === 'long') part(L, sph(0.29, 20, 14), hair, 0, 0.99, -0.08, { s: [1.02, 1.28, 0.82] });
+  const capColor = shirt === '#2f3b4a' ? '#c64530' : '#2f3b4a';
   if (style === 'cap') {
-    part(L, new THREE.SphereGeometry(0.29, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.5), shirt === '#2f3b4a' ? '#c64530' : '#2f3b4a', 0, 1.12, 0, { rx: -0.25 });
-    part(L, new THREE.CylinderGeometry(0.2, 0.2, 0.03, 20, 1, false, 0, Math.PI), shirt === '#2f3b4a' ? '#c64530' : '#2f3b4a', 0, 1.2, 0.2, { rx: -0.2, ry: -Math.PI / 2 });
+    part(L, new THREE.SphereGeometry(R * 1.05, 32, 14, 0, Math.PI * 2, 0, Math.PI * 0.36).rotateX(-0.3), capColor, 0, CY, -0.01, { s: SC });
+    part(L, new THREE.CylinderGeometry(0.2, 0.2, 0.03, 24, 1, false, 0, Math.PI), capColor, 0, 0.7, 0.27, { rx: 0.3, ry: -Math.PI / 2 });
   } else {
-    part(L, new THREE.SphereGeometry(0.287, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), hair, 0, 1.09, -0.02, { rx: -0.55 });
-    for (const bx of [-0.13, 0, 0.13]) part(L, sph(0.09, 10, 8), hair, bx, 1.255, 0.16, { s: [1.25, 0.62, 0.7] });
+    // hair cap: hairline low at the front, down to the nape at the back
+    part(L, new THREE.SphereGeometry(R * 1.04, 36, 18, 0, Math.PI * 2, 0, Math.PI * 0.375).rotateX(-0.48), hair, 0, CY, -0.01, { s: SC });
+    // bangs fill the forehead
+    for (const [bx, by, bz, rz] of [[-0.14, 0.685, 0.215, 0.35], [0, 0.705, 0.245, 0], [0.14, 0.685, 0.215, -0.35]])
+      part(L, sph(0.1, 14, 10), hair, bx, by, bz, { s: [1.3, 0.55, 0.62], rz });
+    for (const sx of [-1, 1]) part(L, sph(0.09, 12, 10), hair, 0.27 * sx, 0.6, 0.09, { s: [0.55, 1.05, 0.8] });
   }
-  if (style === 'bun') part(L, sph(0.12, 12, 10), hair, 0, 1.36, -0.15);
+  if (style === 'long') {
+    part(L, sph(R * 0.98, 24, 16), hair, 0, 0.5, -0.07, { s: [1.03, 0.98, 0.8] });
+    for (const sx of [-1, 1]) part(L, sph(0.12, 14, 10), hair, 0.29 * sx, 0.45, 0.02, { s: [0.5, 1.25, 0.7] });
+  }
+  if (style === 'bun') part(L, sph(0.1, 14, 10), hair, 0, 0.86, -0.06);
   for (const sx of [-1, 1]) {
-    part(L, sph(0.034, 10, 8), '#2b2420', 0.095 * sx, 1.07, 0.255, { s: [0.85, 1.15, 0.5] });
-    part(L, sph(0.011, 6, 4), '#ffffff', 0.095 * sx + 0.012, 1.087, 0.272);
-    part(L, new THREE.CapsuleGeometry(0.011, 0.045, 2, 6), style === 'cap' ? '#2b2420' : hair, 0.095 * sx, 1.155, 0.25, { rz: Math.PI / 2 + 0.06 * sx });
-    part(L, sph(0.048, 8, 6), '#f2a08c', 0.165 * sx, 1.0, 0.215, { s: [1, 0.6, 0.35] });
-    if (glasses) part(L, new THREE.TorusGeometry(0.068, 0.012, 6, 18), '#3b322c', 0.095 * sx, 1.07, 0.268);
+    part(L, sph(0.036, 14, 10), '#2b2420', 0.1 * sx, 0.59, 0.29, { s: [0.85, 1.2, 0.45] });
+    part(L, sph(0.012, 6, 4), '#ffffff', 0.1 * sx + 0.011, 0.606, 0.305);
+    part(L, sph(0.046, 12, 8), '#f39a86', 0.175 * sx, 0.53, 0.265, { s: [1, 0.55, 0.3] });
+    if (glasses) part(L, new THREE.TorusGeometry(0.062, 0.011, 6, 20), '#3b322c', 0.1 * sx, 0.59, 0.305);
   }
-  part(L, sph(0.016, 6, 4), '#7a3b30', 0, 0.985, 0.262, { s: [1.8, 0.7, 0.5] });
+  part(L, new THREE.TorusGeometry(0.03, 0.008, 6, 14, Math.PI), '#2b2420', 0, 0.528, 0.308, { rz: Math.PI });
   const g = mergeGeometries(L, false);
   g.computeBoundingSphere();
   geoCache.set(key, g);
@@ -85,9 +93,10 @@ export class Person {
     this.body = new THREE.Mesh(characterGeometry(look), charMat);
     this.body.castShadow = true;
     this.group.add(this.body);
-    this.tag = new THREE.Mesh(new THREE.PlaneGeometry(0.24, 0.15), new THREE.MeshStandardMaterial({ map: tagTexture(gen), roughness: 0.8, transparent: true }));
-    this.tag.position.set(0, 0.62, 0.188);
+    this.tag = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.124), new THREE.MeshStandardMaterial({ map: tagTexture(gen), roughness: 0.8, transparent: true }));
+    this.tag.position.set(0, 0.3, 0.318);
     this.group.add(this.tag);
+    this.group.scale.setScalar(1.2);
     this.group.userData.personId = id;
     this.pos = new THREE.Vector2(0, 0);
     this.target = null;
@@ -108,7 +117,8 @@ export class Person {
   say(text, ms = 7000) {
     if (this.bubble) { this.group.remove(this.bubble); this.bubble.material.map.dispose(); this.bubble.material.dispose(); }
     this.bubble = bubbleSprite(text);
-    this.bubble.position.set(0, 1.95, 0);
+    this.bubble.position.set(0, 1.25, 0);
+    this.bubble.scale.multiplyScalar(1 / 1.2);
     this.group.add(this.bubble);
     this.bubbleUntil = performance.now() + ms;
   }

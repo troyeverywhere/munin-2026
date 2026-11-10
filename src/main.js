@@ -79,7 +79,7 @@ function openJoin(after) {
   sc.add(new THREE.HemisphereLight('#fff6ea', '#d9bc94', 2.0));
   const dl = new THREE.DirectionalLight('#ffe2bd', 2.0); dl.position.set(-2, 3, 4); sc.add(dl);
   const fl = new THREE.DirectionalLight('#ffffff', 0.9); fl.position.set(1.5, 1, 4); sc.add(fl);
-  const cam = new THREE.PerspectiveCamera(26, 120 / 150, 0.1, 20); cam.position.set(0, 0.95, 3.4); cam.lookAt(0, 0.7, 0);
+  const cam = new THREE.PerspectiveCamera(26, 120 / 150, 0.1, 20); cam.position.set(0, 0.62, 2.5); cam.lookAt(0, 0.42, 0);
   const body = new THREE.Mesh(characterGeometry(look), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82 }));
   sc.add(body);
   let alive = true, t = 0;
