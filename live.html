@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 문인 동문회 · 큰 화면</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/src/style.css">
+<style>
+  .live-title { position: fixed; top: 28px; left: 32px; z-index: 5; background: var(--wood); color: #fbefd8; border-radius: 22px; padding: 16px 26px 18px; box-shadow: var(--shadow); }
+  .live-title b { display: block; font-size: 38px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.1; }
+  .live-title span { font-size: 17px; opacity: 0.85; }
+  .live-step { margin-top: 10px; display: inline-flex; gap: 8px; align-items: center; background: #fbefd8; color: var(--wood); font-weight: 800; font-size: 16px; padding: 6px 12px; border-radius: 999px; }
+  .live-notice { position: fixed; top: 32px; right: 32px; max-width: 44vw; z-index: 5; background: var(--accent); color: #fff; border-radius: 20px; padding: 16px 26px; font-size: 26px; font-weight: 700; box-shadow: var(--shadow); line-height: 1.35; animation: drop .4s ease; }
+  .live-notice strong { margin-right: 12px; font-weight: 900; }
+  .live-qr { position: fixed; right: 28px; bottom: 28px; z-index: 5; width: 250px; background: var(--paper); border-radius: 24px; padding: 18px; box-shadow: var(--shadow); text-align: center; }
+  .live-qr img { width: 100%; display: block; border-radius: 10px; }
+  .live-qr b { display: block; font-size: 19px; margin: 12px 0 4px; }
+  .live-qr .count { font-size: 17px; color: var(--ink-2); }
+  .live-qr .count em { font-style: normal; font-size: 40px; font-weight: 900; color: var(--accent); margin: 0 4px; vertical-align: -4px; }
+  .live-feed { position: fixed; left: 28px; bottom: 28px; z-index: 5; width: 380px; display: flex; flex-direction: column; gap: 10px; }
+  .live-feed .item { background: rgba(255, 250, 242, 0.95); border-radius: 18px; padding: 12px 16px; box-shadow: var(--shadow); animation: drop .4s ease; }
+  .live-feed .item .who { font-size: 14px; color: var(--ink-2); font-weight: 700; }
+  .live-feed .item .tx { font-size: 20px; font-weight: 600; line-height: 1.35; margin-top: 2px; word-break: keep-all; overflow-wrap: anywhere; }
+  .live-feed .item.picked { background: #fff3c8; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div class="live-title"><b>2026 문인 동문회</b><span>연희관 앞마당에 모였어요</span><div><span id="step" class="live-step" hidden></span></div></div>
+<div id="notice" class="live-notice" hidden><strong>공지</strong><span id="noticeText"></span></div>
+<div id="feed" class="live-feed" aria-live="polite"></div>
+<div class="live-qr"><img id="qr" alt="참여 QR 코드"><b>폰으로 찍고 들어오세요</b><div class="count">지금<em id="count">0</em>명</div></div>
+<script type="module" src="/src/live.js"></script>
+</body>
+</html>

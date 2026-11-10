@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>운영진 · 2026 문인 동문회</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/src/style.css">
+<style>
+  html, body { overflow: auto; background: #f6ead2; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 18px 80px; }
+  h1 { font-size: 24px; margin: 6px 0 4px; }
+  .sub { color: var(--ink-2); margin: 0 0 22px; font-size: 14px; }
+  .card { background: var(--paper); border-radius: 20px; padding: 18px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .card h2 { font-size: 17px; margin: 0 0 12px; }
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .steps button { text-align: left; border: 1.5px solid var(--line); background: #fff; border-radius: 14px; padding: 12px 14px; font-size: 15px; min-height: 48px; }
+  .steps button.on { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 800; }
+  .plist { display: flex; flex-direction: column; }
+  .prow { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .prow .tx { flex: 1; font-size: 14.5px; line-height: 1.45; }
+  .prow .tx small { display: block; color: var(--ink-2); font-size: 12px; }
+  .mini { border: 1.5px solid var(--line); background: #fff; border-radius: 10px; padding: 6px 10px; font-size: 13px; min-height: 36px; white-space: nowrap; }
+  .mini.on { background: #fff3c8; border-color: #e6c86a; }
+  .mini.danger { color: #a3271a; }
+  .links a { color: var(--accent); font-weight: 700; margin-right: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>운영진 화면</h1>
+  <p class="sub">공지 띄우기, 지금 순서 바꾸기, 소식 관리를 여기서 합니다.</p>
+
+  <section id="login" class="card">
+    <h2>운영진 코드</h2>
+    <div class="composer"><input id="code" class="input" type="password" autocomplete="off" placeholder="운영진 코드" aria-label="운영진 코드"><button id="enter" class="btn" type="button">확인</button></div>
+    <p id="loginMsg" class="note"></p>
+  </section>
+
+  <div id="panel" hidden>
+    <section class="card">
+      <h2>공지</h2>
+      <div class="field"><input id="noticeIn" class="input" maxlength="80" placeholder="예: 19:10부터 2부가 시작됩니다" aria-label="공지 문구"></div>
+      <div class="row"><button id="noticeOn" class="btn" type="button">공지 띄우기</button><button id="noticeOff" class="btn btn-line" type="button">공지 내리기</button></div>
+      <p id="noticeNow" class="note"></p>
+    </section>
+
+    <section class="card">
+      <h2>지금 진행 중인 순서</h2>
+      <div id="steps" class="steps"></div>
+    </section>
+
+    <section class="card">
+      <h2>소식 <span id="pcount" class="note"></span></h2>
+      <p class="note" style="margin-top:-6px">'읽을 소식'으로 표시하면 큰 화면에 노란색으로 먼저 뜹니다.</p>
+      <div id="plist" class="plist"></div>
+    </section>
+
+    <section class="card">
+      <h2>초기화</h2>
+      <p class="note" style="margin:0 0 12px">행사 전에 테스트로 남긴 내용을 지울 때 씁니다. 버튼을 두 번 눌러야 실행됩니다.</p>
+      <div class="row"><button id="resetPosts" class="btn btn-line" type="button">소식·공지만 지우기</button><button id="resetAll" class="btn btn-line" type="button">참석자까지 모두 지우기</button></div>
+    </section>
+
+    <p class="links"><a href="./">폰 화면</a><a href="./live.html">큰 화면</a></p>
+  </div>
+</main>
+<script type="module" src="/src/admin.js"></script>
+</body>
+</html>

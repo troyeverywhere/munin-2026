@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f3e4cf">
+<title>2026 문인 동문회</title>
+<meta name="description" content="연세대학교 문화인류학과 2026 동문회 · 연희관 앞마당에서 만나요">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+<div id="stage" aria-label="연희관 앞마당 지도. 화면을 끌어서 움직이고, 땅을 누르면 내 캐릭터가 걸어갑니다."></div>
+
+<header class="topbar">
+  <div class="title-chip">2026 문인 동문회</div>
+  <div class="topbar-right">
+    <span id="demoChip" class="chip chip-warn" hidden>미리보기</span>
+    <span class="chip"><span class="dot"></span><span id="onlineCount">0</span>명 접속</span>
+  </div>
+</header>
+
+<div id="notice" class="notice" hidden role="status">
+  <strong>공지</strong><span id="noticeText"></span>
+  <button id="noticeClose" class="icon-btn" aria-label="공지 닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3 13 13M13 3 3 13"/></svg></button>
+</div>
+
+<div id="hint" class="hint" hidden>땅을 누르면 내 캐릭터가 걸어가요</div>
+
+<button id="composeBtn" class="fab">
+  <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 15 3.6 11.8 12 3.4 14.6 6 6.2 14.4Z M10.6 4.8 13.2 7.4"/></svg>
+  소식 남기기
+</button>
+
+<nav class="tabbar" aria-label="메뉴">
+  <button data-tab="map" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6 9 4 15 6 21 4V18L15 20 9 18 3 20Z M9 4V18 M15 6V20"/></svg>맵</button>
+  <button data-tab="board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5H20V16H11L6 20V16H4Z"/></svg>게시판</button>
+  <button data-tab="info"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4 21 11 M5 11V20H19V11 M9 14H15 M9 17H15"/></svg>안내소</button>
+  <button data-tab="slides"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4H21 M5 4V15H19V4 M12 15V19 M8 21 12 19 16 21"/></svg>장표</button>
+  <button data-tab="people"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19C4.2 15.6 6.4 14 9 14S13.8 15.6 14.5 19 M15.5 5.2A3 3 0 0 1 15.5 11 M17 14.2C19 14.8 20.2 16.4 20.6 19"/></svg>참석자</button>
+</nav>
+
+<div id="scrim" class="scrim" hidden></div>
+<section id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-head">
+    <h2 id="sheetTitle"></h2>
+    <button id="sheetClose" class="icon-btn" aria-label="닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3 13 13M13 3 3 13"/></svg></button>
+  </div>
+  <div id="sheetBody" class="sheet-body"></div>
+  <div id="sheetFoot" class="sheet-foot" hidden></div>
+</section>
+
+<div id="toast" class="toast" role="status" hidden></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
