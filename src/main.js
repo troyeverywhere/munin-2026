@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { createEngine } from './engine.js';
 import { initData, join, post, deleteMine, broadcastMove, me, isDemo } from './data.js';
-import { SKINS, HAIRS, SHIRTS, STYLES, randomLook, characterGeometry } from './characters.js';
+import { randomLook, characterGeometry } from './characters.js';
 import { EVENT, PROGRAM, SEATING, seatFor, NETWORKING, AFTER, THANKS } from './content.js';
 
 const $ = (s) => document.querySelector(s);
@@ -76,34 +76,19 @@ function openJoin(after) {
   r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.setSize(120, 150); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping;
   pv.append(r.domElement);
   const sc = new THREE.Scene();
-  sc.add(new THREE.HemisphereLight('#fff6ea', '#c9a87c', 1.6));
-  const dl = new THREE.DirectionalLight('#ffd8a8', 2.2); dl.position.set(-2, 3, 4); sc.add(dl);
+  sc.add(new THREE.HemisphereLight('#fff6ea', '#d9bc94', 2.0));
+  const dl = new THREE.DirectionalLight('#ffe2bd', 2.0); dl.position.set(-2, 3, 4); sc.add(dl);
+  const fl = new THREE.DirectionalLight('#ffffff', 0.9); fl.position.set(1.5, 1, 4); sc.add(fl);
   const cam = new THREE.PerspectiveCamera(26, 120 / 150, 0.1, 20); cam.position.set(0, 0.95, 3.4); cam.lookAt(0, 0.7, 0);
   const body = new THREE.Mesh(characterGeometry(look), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82 }));
   sc.add(body);
   let alive = true, t = 0;
   (function spin() { if (!alive) return; t += 0.016; body.rotation.y = Math.sin(t * 0.9) * 0.5; r.render(sc, cam); requestAnimationFrame(spin); })();
-  sheetCleanup = () => { alive = false; r.dispose(); };
-  const refresh = () => { body.geometry = characterGeometry(look); paint(); };
+  const reroll = () => { look = randomLook(); body.geometry = characterGeometry(look); };
 
   const gen = h('select', { class: 'input', id: 'jgen', 'aria-label': '학번' }, genOptions());
   if (cur) gen.value = cur.gen;
   const name = h('input', { class: 'input', id: 'jname', maxlength: '12', placeholder: '이름', autocomplete: 'name', value: cur ? cur.name : '' });
-  const skins = h('div', { class: 'swatches' }), hairs = h('div', { class: 'swatches' }), shirts = h('div', { class: 'swatches' }), styles = h('div', { class: 'pills' });
-  const glasses = h('button', { class: 'pill', type: 'button' }, '안경');
-  function swatchRow(box, list, key, label) {
-    box.replaceChildren(...list.map((c, i) => h('button', { class: 'sw', type: 'button', style: `background:${c}`, 'aria-label': `${label} ${i + 1}`, 'aria-pressed': String(look[key] === c), onclick: () => { look[key] = c; refresh(); } })));
-  }
-  function paint() {
-    swatchRow(skins, SKINS, 'skin', '피부색');
-    swatchRow(hairs, HAIRS, 'hair', '머리색');
-    swatchRow(shirts, SHIRTS, 'shirt', '옷 색');
-    styles.replaceChildren(...STYLES.map((s) => h('button', { class: 'pill', type: 'button', 'aria-pressed': String(look.style === s.id), onclick: () => { look.style = s.id; refresh(); } }, s.label)), glasses);
-    glasses.setAttribute('aria-pressed', String(!!look.glasses));
-  }
-  glasses.onclick = () => { look.glasses = !look.glasses; refresh(); };
-  paint();
-
   const go = h('button', { class: 'btn', type: 'button' }, cur ? '저장하기' : '입장하기');
   const validate = () => { go.disabled = !gen.value || !name.value.trim(); };
   gen.onchange = validate; name.oninput = validate; validate();
@@ -121,17 +106,17 @@ function openJoin(after) {
     } catch (e) { console.error(e); toast('입장하지 못했어요. 잠시 후 다시 시도해 주세요'); go.disabled = false; }
   };
   const body2 = h('div', {},
-    h('div', { class: 'join-top' }, pv, h('p', {}, h('strong', {}, cur ? '내 캐릭터' : '연희관 앞마당에 오신 걸 환영해요'), '학번과 이름을 적고 캐릭터를 꾸며 주세요. 1분이면 끝나요.')),
+    h('div', { class: 'join-top' }, h('div', { class: 'preview-col' }, pv,
+      h('button', { class: 'reroll', type: 'button', onclick: reroll },
+        h('span', { class: 'reroll-ico', 'aria-hidden': 'true' }, '↻'), '다시 뽑기')),
+      h('p', {}, h('strong', {}, cur ? '내 캐릭터' : '연희관 앞마당에 오신 걸 환영해요'), cur ? '마음에 안 들면 다시 뽑아 보세요.' : '학번과 이름만 적으면 캐릭터는 자동으로 만들어져요. 마음에 안 들면 다시 뽑기를 눌러 주세요.')),
     h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { for: 'jgen' }, '학번'), gen), h('div', { class: 'field' }, h('label', { for: 'jname' }, '이름'), name)),
-    h('div', { class: 'field' }, h('span', { class: 'label' }, '머리 모양'), styles),
-    h('div', { class: 'field' }, h('span', { class: 'label' }, '머리색'), hairs),
-    h('div', { class: 'field' }, h('span', { class: 'label' }, '피부색'), skins),
-    h('div', { class: 'field' }, h('span', { class: 'label' }, '옷 색'), shirts),
-    h('button', { class: 'btn btn-line', type: 'button', onclick: () => { look = randomLook(); refresh(); } }, '아무렇게나 꾸미기'),
     h('p', { class: 'note' }, '입력한 학번·이름과 남긴 소식은 이 페이지를 연 모든 사람에게 보여요.'),
   );
   const foot = h('div', {}, go, cur ? null : h('button', { class: 'btn btn-ghost', type: 'button', onclick: () => closeSheet() }, '먼저 둘러볼게요'));
-  openSheet(cur ? '내 캐릭터 고치기' : '입장하기', body2, { foot });
+  openSheet(cur ? '내 캐릭터' : '입장하기', body2, { foot });
+  // register after openSheet: opening a sheet runs the previous sheet's cleanup
+  sheetCleanup = () => { alive = false; r.dispose(); };
 }
 
 // ---------- compose ----------

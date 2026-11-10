@@ -61,7 +61,7 @@ export function characterGeometry(look) {
   for (const sx of [-1, 1]) {
     part(L, sph(0.034, 10, 8), '#2b2420', 0.095 * sx, 1.07, 0.255, { s: [0.85, 1.15, 0.5] });
     part(L, sph(0.011, 6, 4), '#ffffff', 0.095 * sx + 0.012, 1.087, 0.272);
-    part(L, new THREE.CapsuleGeometry(0.011, 0.045, 2, 6), style === 'cap' ? '#2b2420' : hair, 0.095 * sx, 1.15, 0.25, { rz: Math.PI / 2 - 0.18 * sx });
+    part(L, new THREE.CapsuleGeometry(0.011, 0.045, 2, 6), style === 'cap' ? '#2b2420' : hair, 0.095 * sx, 1.155, 0.25, { rz: Math.PI / 2 + 0.06 * sx });
     part(L, sph(0.048, 8, 6), '#f2a08c', 0.165 * sx, 1.0, 0.215, { s: [1, 0.6, 0.35] });
     if (glasses) part(L, new THREE.TorusGeometry(0.068, 0.012, 6, 18), '#3b322c', 0.095 * sx, 1.07, 0.268);
   }
