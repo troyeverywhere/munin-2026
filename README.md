@@ -20,15 +20,14 @@
 
 DB 설정 전에는 사이트가 '미리보기' 모드로 예시 캐릭터와 예시 소식을 보여 줍니다.
 
-## 2. 처음 한 번만: 배포 (Cloudflare Pages)
+## 2. 처음 한 번만: 배포 (Cloudflare Workers)
 
-1. [Cloudflare 대시보드](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
-2. 저장소 `munin-2026` 선택
-3. 설정
-   - Framework preset: `None`
+1. [Cloudflare 대시보드](https://dash.cloudflare.com) → Workers & Pages → **Create** → GitHub 저장소 `munin-2026` 연결
+2. 설정
+   - Project name: `munin-2026` (저장소의 `wrangler.jsonc` 이름과 같아야 합니다)
    - Build command: `npm run build`
-   - Build output directory: `dist`
-4. **Save and Deploy**. 1~2분 뒤 `https://munin-2026.pages.dev` 로 열립니다.
+   - Deploy command: `npx wrangler deploy` (기본값 그대로)
+3. **Deploy**. 1~2분 뒤 `https://munin-2026.<계정이름>.workers.dev` 로 열립니다.
 
 이후로는 `main` 에 올리면 자동으로 다시 배포됩니다.
 

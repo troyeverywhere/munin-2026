@@ -2,7 +2,7 @@
 
 2026 문인 동문회(연세대 문화인류학과) 행사 사이트. 운영자는 비개발자이며 채팅으로 요청한다.
 
-- 스택: Vite + three.js + Supabase(JS). 배포는 Cloudflare Pages (`npm run build` → `dist`), `main` push 시 자동 배포.
+- 스택: Vite + three.js + Supabase(JS). 배포는 Cloudflare Workers 정적 자산 (`npm run build` → `dist`, `wrangler.jsonc`), `main` push 시 자동 배포.
 - 쓰기는 모두 `supabase/setup.sql` 의 RPC로만 한다(테이블은 anon 읽기 전용). 스키마를 바꾸면 setup.sql 을 여러 번 실행해도 안전하게 유지하고, 운영자에게 SQL Editor에서 다시 실행하라고 안내한다.
 - `src/config.js` 에는 publishable key 만 둔다. secret key 는 어디에도 넣지 않는다.
 - 행사 내용(식순·자리·네트워킹·후원자)은 `src/content.js` 에만 둔다. 확정 전 내용은 `[확정 전]` 으로 표시하고 지어내지 않는다.
