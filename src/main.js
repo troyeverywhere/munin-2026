@@ -62,8 +62,7 @@ function setTab(t) { document.querySelectorAll('.tabbar button').forEach((b) => 
 function genOptions() {
   const o = [h('option', { value: '' }, '학번 선택')];
   o.push(h('option', { value: '교수' }, '교수님'));
-  for (let y = 26; y >= 0; y--) o.push(h('option', { value: String(y).padStart(2, '0') }, `${String(y).padStart(2, '0')}학번`));
-  for (let y = 99; y >= 80; y--) o.push(h('option', { value: String(y) }, `${y}학번`));
+  for (let y = 26; y >= 8; y--) o.push(h('option', { value: String(y).padStart(2, '0') }, `${String(y).padStart(2, '0')}학번`));
   o.push(h('option', { value: '게스트' }, '게스트'));
   return o;
 }
