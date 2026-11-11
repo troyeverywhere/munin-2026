@@ -128,7 +128,59 @@ export function createEngine(container, { view = 'phone' } = {}) {
     if (!p) return null;
     const [cx, cz] = clampWalk(x, z);
     p.walkTo(cx, cz);
+    showMarker(cx, cz);
     return [cx, cz];
+  }
+
+  // ---- tap marker: a bobbing pin + rippling rings where my character is heading ----
+  const marker = new THREE.Group();
+  {
+    const red = new THREE.MeshBasicMaterial({ color: '#c64530', toneMapped: false });
+    const cream = new THREE.MeshBasicMaterial({ color: '#fffaf2', toneMapped: false });
+    const pin = new THREE.Group();
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.28, 20), red);
+    cone.rotation.x = Math.PI; cone.position.y = 0.14;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.14, 20, 14), red); head.position.y = 0.33;
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 10), cream); dot.position.set(0, 0.35, 0.1);
+    pin.add(cone, head, dot);
+    pin.name = 'pin';
+    const shadow = new THREE.Mesh(new THREE.CircleGeometry(0.16, 24), new THREE.MeshBasicMaterial({ color: '#3b2a1e', transparent: true, opacity: 0.22, depthWrite: false }));
+    shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.03; shadow.name = 'shadow';
+    marker.add(pin, shadow);
+    for (let i = 0; i < 2; i++) {
+      const ring = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.27, 40), new THREE.MeshBasicMaterial({ color: '#fffaf2', transparent: true, depthWrite: false, toneMapped: false }));
+      ring.rotation.x = -Math.PI / 2; ring.position.y = 0.04 + i * 0.002; ring.userData.offset = i * 0.5; ring.name = 'ring';
+      marker.add(ring);
+    }
+    marker.visible = false;
+    marker.renderOrder = 4;
+    scene.add(marker);
+  }
+  let markerT = 0, markerOut = -1;
+  function showMarker(x, z) {
+    marker.position.set(x, 0, z);
+    marker.visible = true; marker.scale.setScalar(0.01);
+    markerT = 0; markerOut = -1;
+  }
+  function tickMarker(dt) {
+    if (!marker.visible) return;
+    markerT += dt;
+    const me = people.get(myId);
+    if (markerOut < 0 && (!me || !me.target || markerT > 8)) markerOut = 0;
+    let s;
+    if (markerOut >= 0) { markerOut += dt; s = Math.max(0, 1 - markerOut / 0.25); if (s === 0) { marker.visible = false; return; } }
+    else if (markerT < 0.3) { const k = markerT / 0.3; s = k < 0.6 ? (k / 0.6) * 1.25 : 1.25 - ((k - 0.6) / 0.4) * 0.25; } // pop in with a little overshoot
+    else s = 1;
+    marker.scale.setScalar(Math.max(0.01, s) * 1.9);
+    const pin = marker.getObjectByName('pin');
+    pin.position.y = 0.06 + Math.abs(Math.sin(markerT * 5)) * 0.14;
+    pin.rotation.y += dt * 2.5;
+    marker.getObjectByName('shadow').scale.setScalar(1 - Math.abs(Math.sin(markerT * 5)) * 0.25);
+    marker.children.filter((c) => c.name === 'ring').forEach((r) => {
+      const f = ((markerT + r.userData.offset) % 1);
+      r.scale.setScalar(0.6 + f * 1.6);
+      r.material.opacity = (1 - f) * 0.9;
+    });
   }
   function focus(id) {
     const p = people.get(id);
@@ -154,6 +206,7 @@ export function createEngine(container, { view = 'phone' } = {}) {
       }
       p.tick(dt, now);
     }
+    tickMarker(dt);
     if (flyTo && controls) {
       flyTo.t = Math.min(1, flyTo.t + dt * 2);
       const k = 1 - Math.pow(1 - flyTo.t, 3);
