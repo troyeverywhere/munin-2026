@@ -1,7 +1,7 @@
 // 빔 큰 화면: 맵 전체 + QR + 참여 인원 + 공지 + 최근 소식
 import QRCode from 'qrcode';
 import { createEngine } from './engine.js';
-import { initData } from './data.js';
+import { initData, isActive } from './data.js';
 import { PROGRAM } from './content.js';
 
 const $ = (s) => document.querySelector(s);
@@ -41,7 +41,7 @@ const init = await initData({
   isLive: true,
   onPlayer(type, n, o) {
     if (type === 'DELETE') { players.delete(o.id); engine.removePlayer(o.id); }
-    else { players.set(n.id, n); engine.addPlayer(n); }
+    else { players.set(n.id, n); sync(n); }
   },
   onPost(type, n, o) {
     if (type === 'INSERT') { posts.push(n); engine.say(n.player_id, n.text, 10000); lastPostAt = Date.now(); }
@@ -52,9 +52,11 @@ const init = await initData({
   onNotice: notice,
   onStep: step,
   onOnline(n) { $('#count').textContent = String(n); },
-  onMove: (id, x, z) => engine.remoteMove(id, x, z),
 });
-for (const p of init.players) { players.set(p.id, p); engine.addPlayer(p); }
+// 맵에는 10분 안에 접속한 사람만
+function sync(p) { if (isActive(p)) engine.addPlayer(p); else engine.removePlayer(p.id); }
+for (const p of init.players) { players.set(p.id, p); sync(p); }
+setInterval(() => { for (const p of players.values()) sync(p); }, 30000);
 posts = init.posts;
 feed(); step(init.step); notice(init.notice);
 // keep the map lively: replay a recent post now and then when it is quiet

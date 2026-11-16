@@ -25,6 +25,9 @@ create table if not exists public.players (
   updated_at timestamptz not null default now()
 );
 
+alter table public.players add column if not exists last_seen timestamptz not null default now();
+create index if not exists players_seen_idx on public.players (last_seen);
+
 create table if not exists private.player_tokens (
   player_id uuid primary key references public.players(id) on delete cascade,
   token uuid not null unique
@@ -91,7 +94,7 @@ begin
     insert into public.players(gen, name, look) values (p_gen, btrim(p_name), coalesce(p_look, '{}'::jsonb)) returning id into pid;
     insert into private.player_tokens(player_id, token) values (pid, p_token);
   else
-    update public.players set gen = p_gen, name = btrim(p_name), look = coalesce(p_look, look), updated_at = now() where id = pid;
+    update public.players set gen = p_gen, name = btrim(p_name), look = coalesce(p_look, look), updated_at = now(), last_seen = now() where id = pid;
   end if;
   return pid;
 end $$;
@@ -167,6 +170,45 @@ begin
   if p_all then delete from public.players where true; end if;
 end $$;
 
+-- 화면이 3초마다 부르는 함수. 새 소식·참석자·공지·지금 순서·접속 인원을 한 번에 돌려줍니다.
+-- 토큰을 넘기면 그 사람의 '마지막 접속 시각'도 갱신합니다(45초에 한 번).
+create or replace function public.get_updates(p_token uuid default null, p_after_post bigint default 0, p_players_since timestamptz default 'epoch')
+returns jsonb language plpgsql security definer set search_path = public, private as $$
+declare pid uuid; res jsonb;
+begin
+  if p_token is not null then
+    select player_id into pid from private.player_tokens where token = p_token;
+    if pid is not null then
+      update public.players set last_seen = now() where id = pid and last_seen < now() - interval '45 seconds';
+    end if;
+  end if;
+  select jsonb_build_object(
+    'now', now(),
+    'posts', coalesce((select jsonb_agg(to_jsonb(p) order by p.id) from (select * from public.posts where id > p_after_post order by id limit 200) p), '[]'::jsonb),
+    'post_ids', coalesce((select jsonb_agg(x.id) from (select id from public.posts order by id desc limit 300) x), '[]'::jsonb),
+    'picked_ids', coalesce((select jsonb_agg(id) from public.posts where picked), '[]'::jsonb),
+    'players', coalesce((select jsonb_agg(to_jsonb(pl)) from (select id, gen, name, look, last_seen, updated_at from public.players where updated_at > p_players_since or last_seen > p_players_since) pl), '[]'::jsonb),
+    'player_ids', coalesce((select jsonb_agg(id) from public.players), '[]'::jsonb),
+    'notice', (select to_jsonb(n) from (select id, text from public.notices where active order by created_at desc limit 1) n),
+    'step', coalesce((select (value->>'index')::int from public.settings where key = 'step'), 0),
+    'online', (select count(*) from public.players where last_seen > now() - interval '2 minutes')
+  ) into res;
+  return res;
+end $$;
+
+-- 운영진: 참석자 한 명 지우기 (그 사람이 남긴 소식도 함께 지워집니다)
+create or replace function public.admin_delete_player(p_code text, p_id uuid)
+returns void language plpgsql security definer set search_path = public, private as $$
+begin
+  if not public.admin_check(p_code) then raise exception 'wrong code'; end if;
+  delete from public.players where id = p_id;
+end $$;
+
+revoke all on function public.get_updates(uuid, bigint, timestamptz) from public;
+revoke all on function public.admin_delete_player(text, uuid) from public;
+grant execute on function public.get_updates(uuid, bigint, timestamptz) to anon, authenticated;
+grant execute on function public.admin_delete_player(text, uuid) to anon, authenticated;
+
 revoke all on function public.join_event(uuid, text, text, jsonb) from public;
 revoke all on function public.post_message(uuid, text) from public;
 revoke all on function public.delete_my_post(uuid, bigint) from public;
@@ -186,7 +228,7 @@ grant execute on function public.admin_delete_post(text, bigint) to anon, authen
 grant execute on function public.admin_pick_post(text, bigint, boolean) to anon, authenticated;
 grant execute on function public.admin_reset(text, boolean) to anon, authenticated;
 
--- 9) 실시간 반영 -----------------------------------------------------------
+-- 9) 실시간 반영 (지금 사이트는 3초 주기 get_updates 를 씁니다. 아래는 남겨 둬도 무해합니다) ---
 do $$
 declare t text;
 begin

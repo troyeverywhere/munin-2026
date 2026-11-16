@@ -44,26 +44,26 @@ export function characterGeometry(look) {
   // 콩떡: one smooth bean. upper part skin, lower part clothes.
   const R = 0.34, CY = 0.38, SC = [1, 1.2, 0.92];
   const split = Math.PI * 0.42;
-  part(L, new THREE.SphereGeometry(R, 36, 22, 0, Math.PI * 2, split, Math.PI - split), shirt, 0, CY, 0, { s: SC });
-  part(L, new THREE.SphereGeometry(R, 36, 22, 0, Math.PI * 2, 0, split), skin, 0, CY, 0, { s: SC });
+  part(L, new THREE.SphereGeometry(R, 26, 16, 0, Math.PI * 2, split, Math.PI - split), shirt, 0, CY, 0, { s: SC });
+  part(L, new THREE.SphereGeometry(R, 26, 16, 0, Math.PI * 2, 0, split), skin, 0, CY, 0, { s: SC });
   for (const sx of [-1, 1]) {
     part(L, sph(0.07, 12, 8), '#3b322c', 0.11 * sx, 0.03, 0.04, { s: [1, 0.6, 1.3] });
     part(L, sph(0.06, 12, 8), shirt, 0.33 * sx, 0.33, 0, { s: [0.7, 1, 0.8] });
   }
   const capColor = shirt === '#2f3b4a' ? '#c64530' : '#2f3b4a';
   if (style === 'cap') {
-    part(L, new THREE.SphereGeometry(R * 1.05, 32, 14, 0, Math.PI * 2, 0, Math.PI * 0.36).rotateX(-0.3), capColor, 0, CY, -0.01, { s: SC });
+    part(L, new THREE.SphereGeometry(R * 1.05, 24, 10, 0, Math.PI * 2, 0, Math.PI * 0.36).rotateX(-0.3), capColor, 0, CY, -0.01, { s: SC });
     part(L, new THREE.CylinderGeometry(0.2, 0.2, 0.03, 24, 1, false, 0, Math.PI), capColor, 0, 0.7, 0.27, { rx: 0.3, ry: -Math.PI / 2 });
   } else {
     // hair cap: hairline low at the front, down to the nape at the back
-    part(L, new THREE.SphereGeometry(R * 1.04, 36, 18, 0, Math.PI * 2, 0, Math.PI * 0.375).rotateX(-0.48), hair, 0, CY, -0.01, { s: SC });
+    part(L, new THREE.SphereGeometry(R * 1.04, 26, 12, 0, Math.PI * 2, 0, Math.PI * 0.375).rotateX(-0.48), hair, 0, CY, -0.01, { s: SC });
     // bangs fill the forehead
     for (const [bx, by, bz, rz] of [[-0.14, 0.685, 0.215, 0.35], [0, 0.705, 0.245, 0], [0.14, 0.685, 0.215, -0.35]])
       part(L, sph(0.1, 14, 10), hair, bx, by, bz, { s: [1.3, 0.55, 0.62], rz });
     for (const sx of [-1, 1]) part(L, sph(0.09, 12, 10), hair, 0.27 * sx, 0.6, 0.09, { s: [0.55, 1.05, 0.8] });
   }
   if (style === 'long') {
-    part(L, sph(R * 0.98, 24, 16), hair, 0, 0.5, -0.07, { s: [1.03, 0.98, 0.8] });
+    part(L, sph(R * 0.98, 18, 12), hair, 0, 0.5, -0.07, { s: [1.03, 0.98, 0.8] });
     for (const sx of [-1, 1]) part(L, sph(0.12, 14, 10), hair, 0.29 * sx, 0.45, 0.02, { s: [0.5, 1.25, 0.7] });
   }
   if (style === 'bun') part(L, sph(0.1, 14, 10), hair, 0, 0.86, -0.06);

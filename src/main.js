@@ -1,7 +1,7 @@
 // 폰 화면
 import * as THREE from 'three';
 import { createEngine } from './engine.js';
-import { initData, join, post, deleteMine, broadcastMove, me, isDemo } from './data.js';
+import { initData, join, post, deleteMine, broadcastMove, me, isDemo, isActive, isOnline, refreshSoon } from './data.js';
 import { randomLook, characterGeometry } from './characters.js';
 import { EVENT, PROGRAM, SEATING, seatFor, NETWORKING, AFTER, THANKS } from './content.js';
 
@@ -135,6 +135,7 @@ function openCompose() {
 }
 async function sendPost(text) {
   const { id } = await post(text);
+  refreshSoon();
   const mine = state.players.get(state.me);
   addPost({ id, player_id: state.me, gen: mine.gen, name: mine.name, text, created_at: new Date().toISOString(), picked: false });
 }
@@ -228,7 +229,9 @@ function openPeople() {
     const ps = [...state.players.values()].filter((p) => !sel.value || p.gen === sel.value).sort((a, b) => order(a.gen) - order(b.gen));
     if (!ps.length) return list.replaceChildren(h('div', { class: 'empty' }, '아직 입장한 사람이 없어요.'));
     list.replaceChildren(...ps.map((p) => h('button', { class: 'person-row', type: 'button', onclick: () => { closeSheet(); engine.focus(p.id); engine.say(p.id, `${genLabel(p.gen)} ${p.name}`, 3500); } },
-      avatar(p.gen, p.id), h('span', { class: 'nm' }, `${p.name}${p.id === state.me ? ' (나)' : ''}`), h('span', { class: 'go' }, genLabel(p.gen)))));
+      avatar(p.gen, p.id), h('span', { class: 'nm' }, `${p.name}${p.id === state.me ? ' (나)' : ''}`),
+      isOnline(p) || p.id === state.me ? h('span', { class: 'on' }, h('span', { class: 'dot' }), '접속 중') : null,
+      h('span', { class: 'go' }, genLabel(p.gen)))));
   };
   sel.onchange = render; render();
   openSheet(`참석자 ${state.players.size}명`, h('div', {}, sel, list), { tall: true, tab: 'people' });
@@ -263,9 +266,15 @@ engine.on('ground', (x, z) => {
 
 function upsertPlayer(p) {
   state.players.set(p.id, { ...(state.players.get(p.id) || {}), ...p });
-  engine.addPlayer(state.players.get(p.id));
+  syncMap(state.players.get(p.id));
   state.rerender && state.rerender();
 }
+// 맵에는 나와, 10분 안에 접속한 사람만 (모든 참석자는 '참석자' 목록에)
+function syncMap(p) {
+  if (p.id === state.me || isActive(p)) engine.addPlayer(p);
+  else engine.removePlayer(p.id);
+}
+setInterval(() => { for (const p of state.players.values()) syncMap(p); }, 30000);
 function showNotice(n) {
   state.notice = n;
   const dismissed = (() => { try { return localStorage.getItem('munin.noticeClosed'); } catch { return null; } })();
@@ -288,7 +297,6 @@ const init = await initData({
   onNotice: showNotice,
   onStep(i) { state.step = i; state.rerender && state.rerender(); },
   onOnline(n) { $('#onlineCount').textContent = String(n); },
-  onMove: (id, x, z) => engine.remoteMove(id, x, z),
 });
 $('#demoChip').hidden = !isDemo();
 for (const p of init.players) upsertPlayer(p);
@@ -296,7 +304,7 @@ state.posts = init.posts;
 state.posts.forEach((p) => state.saidPosts.add(p.id));
 state.step = init.step;
 showNotice(init.notice);
-if (me.id && state.players.has(me.id)) { state.me = me.id; engine.setMe(me.id); }
+if (me.id && state.players.has(me.id)) { state.me = me.id; engine.setMe(me.id); syncMap(state.players.get(me.id)); }
 // recent posts appear as bubbles once, staggered
 state.posts.slice(-4).forEach((p, i) => setTimeout(() => engine.say(p.player_id, p.text, 6000), 800 + i * 1400));
 
