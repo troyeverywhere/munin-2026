@@ -27,7 +27,7 @@ jobs:
           command: deploy
       - name: Check the live site serves this build
         run: |
-          sleep 5
+          sleep 20
           want=$(grep -o 'assets/main-[^"]*\.js' dist/index.html)
           got=$(curl -fsS https://munin-2026.troyeverywhere.workers.dev/ | grep -o 'assets/main-[^"]*\.js')
           echo "built: $want / live: $got"
