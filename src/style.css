@@ -115,6 +115,7 @@ textarea.input { resize: none; min-height: 96px; line-height: 1.5; }
 .timeline li { display: grid; grid-template-columns: 56px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .timeline li:last-child { border-bottom: 0; }
 .timeline .t { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.timeline .t small { display: block; font-size: 12px; font-weight: 600; margin-top: 2px; }
 .timeline .ti { font-weight: 700; font-size: 16px; }
 .timeline .d { font-size: 13.5px; color: var(--ink-2); margin-top: 3px; line-height: 1.45; }
 .timeline li.now { background: #fbeee2; border-radius: 14px; margin: 2px -10px; padding: 12px 10px; border-bottom-color: transparent; }
