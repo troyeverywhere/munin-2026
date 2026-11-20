@@ -27,7 +27,7 @@ export function createEngine(container, { view = 'phone' } = {}) {
 
   let controls = null;
   const home = isPhone
-    ? { pos: new THREE.Vector3(0, 19, 19), target: new THREE.Vector3(0, 0.6, 2.4) }
+    ? { pos: new THREE.Vector3(0, 25.2, 24.6), target: new THREE.Vector3(0, 0.6, 2.4) }
     : { pos: new THREE.Vector3(0, 18.5, 40), target: new THREE.Vector3(0, 2.4, -1.2) };
   camera.position.copy(home.pos);
   camera.lookAt(home.target);
@@ -39,7 +39,7 @@ export function createEngine(container, { view = 'phone' } = {}) {
     controls.dampingFactor = 0.12;
     controls.screenSpacePanning = false;
     controls.minDistance = 9;
-    controls.maxDistance = 38;
+    controls.maxDistance = 46;
     controls.zoomSpeed = 0.9;
     controls.addEventListener('change', () => {
       const t = controls.target;
@@ -190,6 +190,11 @@ export function createEngine(container, { view = 'phone' } = {}) {
     flyTo = { from: controls.target.clone(), to, off, t: 0 };
   }
   let flyTo = null;
+  // 한눈에 보기: 처음 시야로 돌아가기
+  function resetView() {
+    if (!controls) return;
+    flyTo = { from: controls.target.clone(), to: home.target.clone(), off: home.pos.clone().sub(home.target), t: 0 };
+  }
 
   // ---- loop ----
   let last = performance.now();
@@ -228,7 +233,7 @@ export function createEngine(container, { view = 'phone' } = {}) {
 
   return {
     renderer, scene, camera, people,
-    addPlayer, removePlayer, say, remoteMove, walkMe, focus,
+    addPlayer, removePlayer, say, remoteMove, walkMe, focus, resetView,
     setMe(id) { myId = id; },
     on(evt, fn) { handlers[evt] = fn; },
     myPos() { const p = people.get(myId); return p ? [p.pos.x, p.pos.y] : null; },

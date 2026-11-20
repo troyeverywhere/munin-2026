@@ -212,7 +212,7 @@ function openInfo() {
 }
 function thanksBody() {
   if (!THANKS.confirmed) return h('div', { class: 'placeholder' }, THANKS.note);
-  return h('div', {}, h('p', {}, THANKS.funders.join(' · ')), THANKS.luckyDraw.length ? h('p', { class: 'note' }, '럭키드로우 경품 후원: ' + THANKS.luckyDraw.join(' · ')) : null);
+  return h('div', {}, h('p', { class: 'note' }, THANKS.note), h('div', { class: 'thanks' }, ...THANKS.funders.map((n) => h('span', {}, n))), THANKS.luckyDraw.length ? h('p', { class: 'note' }, '럭키드로우 경품 후원: ' + THANKS.luckyDraw.join(' · ')) : null);
 }
 
 // ---------- slides / people / photos ----------
@@ -246,10 +246,13 @@ function openThanks() { openSheet('Thanks to', h('div', {}, thanksBody())); }
 // ---------- wiring ----------
 document.querySelectorAll('.tabbar button').forEach((b) => (b.onclick = () => {
   const t = b.dataset.tab;
-  if (t === 'map') return closeSheet();
+  if (t === 'map') { if (!document.querySelector('.sheet')) engine.resetView(); return closeSheet(); }
   ({ board: openBoard, info: openInfo, slides: openSlides, people: openPeople })[t]();
 }));
 $('#composeBtn').onclick = openCompose;
+$('#homeView').onclick = () => engine.resetView();
+// iOS 사파리: 두 손가락으로 페이지 전체가 확대되는 것 막기 (맵 확대는 그대로 됨)
+for (const ev of ['gesturestart', 'gesturechange']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
 engine.on('place', (p) => ({ board: openBoard, info: openInfo, slides: openSlides, photos: openPhotos, thanks: openThanks })[p]());
 engine.on('person', (id) => {
   const p = state.players.get(id); if (!p) return;

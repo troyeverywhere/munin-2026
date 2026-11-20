@@ -25,7 +25,7 @@ function renderSteps() {
   $('#steps').replaceChildren(...PROGRAM.map((p, i) => {
     const b = document.createElement('button'); b.type = 'button';
     b.className = i === step ? 'on' : '';
-    b.textContent = `${p.time}  ${p.title}`;
+    b.textContent = `${p.time}${p.end ? ' ~ ' + p.end : ''}  ${p.title}`;
     b.onclick = async () => { const { error } = await admin.step(i); if (!error) { step = i; renderSteps(); } };
     return b;
   }));
