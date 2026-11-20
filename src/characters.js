@@ -53,13 +53,15 @@ export function characterGeometry(look) {
   const capColor = shirt === '#2f3b4a' ? '#c64530' : '#2f3b4a';
   if (style === 'cap') {
     part(L, new THREE.SphereGeometry(R * 1.05, 24, 10, 0, Math.PI * 2, 0, Math.PI * 0.36).rotateX(-0.3), capColor, 0, CY, -0.01, { s: SC });
-    part(L, new THREE.CylinderGeometry(0.2, 0.2, 0.03, 24, 1, false, 0, Math.PI), capColor, 0, 0.7, 0.27, { rx: 0.3, ry: -Math.PI / 2 });
+    // short brim, tilted up, so the face stays visible from the top-down map camera
+    part(L, new THREE.CylinderGeometry(0.17, 0.17, 0.024, 24, 1, false, 0, Math.PI).rotateY(-Math.PI / 2).scale(1, 1, 0.5).rotateX(-0.4), capColor, 0, 0.675, 0.215);
   } else {
     // hair cap: hairline low at the front, down to the nape at the back
     part(L, new THREE.SphereGeometry(R * 1.04, 26, 12, 0, Math.PI * 2, 0, Math.PI * 0.375).rotateX(-0.48), hair, 0, CY, -0.01, { s: SC });
-    // bangs fill the forehead
-    for (const [bx, by, bz, rz] of [[-0.14, 0.685, 0.215, 0.35], [0, 0.705, 0.245, 0], [0.14, 0.685, 0.215, -0.35]])
-      part(L, sph(0.1, 14, 10), hair, bx, by, bz, { s: [1.3, 0.55, 0.62], rz });
+    // bangs: a fringe shell lying on the forehead (no bulge over the eyes)
+    part(L, new THREE.SphereGeometry(R * 1.045, 22, 8, Math.PI / 2 - 0.85, 1.7, 0, Math.PI * 0.285), hair, 0, CY, 0, { s: SC });
+    for (const [bx, by, bz, rz] of [[-0.12, 0.65, 0.205, 0.3], [0, 0.655, 0.235, 0], [0.12, 0.65, 0.205, -0.3]])
+      part(L, sph(0.06, 12, 8), hair, bx, by, bz, { s: [1.4, 0.7, 0.35], rz });
     for (const sx of [-1, 1]) part(L, sph(0.09, 12, 10), hair, 0.27 * sx, 0.6, 0.09, { s: [0.55, 1.05, 0.8] });
   }
   if (style === 'long') {
