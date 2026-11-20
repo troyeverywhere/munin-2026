@@ -5,7 +5,14 @@ import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 import { randomLook } from './characters.js';
 
-export const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+// 신호가 약해 응답이 안 오면 10초 뒤 끊고 다음 시도로 넘어감
+const fetchWithTimeout = (url, opts = {}) => {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 10000);
+  if (opts.signal) opts.signal.addEventListener('abort', () => ctl.abort());
+  return fetch(url, { ...opts, signal: ctl.signal }).finally(() => clearTimeout(t));
+};
+export const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false }, global: { fetch: fetchWithTimeout } });
 
 const LS = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
@@ -115,12 +122,13 @@ function absorb(d, initial) {
   return out;
 }
 
-let timer = null;
+let timer = null, fails = 0;
 function schedule(ms) {
   clearTimeout(timer);
   timer = setTimeout(async () => {
     if (document.hidden) return schedule(10000);
-    try { absorb(await fetchUpdates(), false); } catch (e) { console.warn('poll failed', e.message); }
+    try { absorb(await fetchUpdates(), false); fails = 0; H.onConn && H.onConn(true); }
+    catch (e) { console.warn('poll failed', e.message); if (++fails >= 2) H.onConn && H.onConn(false); }
     schedule(H.isLive ? 2500 : 3000);
   }, ms);
 }
@@ -128,11 +136,17 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && mo
 
 export async function initData(handlers) {
   Object.assign(H, handlers);
-  let d;
-  try { d = await fetchUpdates(); } catch (e) {
-    console.warn('DB not ready, preview mode:', e.message);
-    mode = 'demo';
-    return { mode, ...demoData() };
+  let d = null;
+  // 행사장 통신이 잠깐 끊겨도 미리보기(가짜 데이터)로 빠지지 않게 몇 번 다시 시도
+  for (let k = 0; k < 4 && !d; k++) {
+    try { d = await fetchUpdates(); } catch (e) { console.warn('first load failed', k, e.message); await new Promise((r) => setTimeout(r, 700 * (k + 1))); }
+  }
+  if (!d) {
+    if (new URLSearchParams(location.search).has('demo')) { mode = 'demo'; return { mode, ...demoData() }; }
+    // 빈 화면으로 시작하고 계속 다시 시도 → 연결되면 사람·소식이 채워짐
+    H.onConn && H.onConn(false);
+    schedule(2000);
+    return { mode, players: [], posts: [], notice: null, step: 0, online: 0 };
   }
   const first = absorb(d, true);
   if (me.id && !known.players.has(me.id)) me.id = null;

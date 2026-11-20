@@ -320,8 +320,13 @@ $('#noticeClose').onclick = () => { $('#notice').hidden = true; try { localStora
 const init = await initData({
   onPlayer(type, n, o) {
     if (type === 'DELETE') { state.players.delete(o.id); engine.removePlayer(o.id); state.rerender && state.rerender(); }
-    else upsertPlayer(n);
+    else {
+      upsertPlayer(n);
+      // 처음에 연결이 늦었던 경우: 내 캐릭터가 나중에 들어오면 그때 내 것으로 잡음
+      if (!state.me && me.id && n.id === me.id) { state.me = me.id; engine.setMe(me.id); syncMap(n); if (!$('#sheet').hidden && $('#sheetTitle').textContent === '입장하기') closeSheet(); }
+    }
   },
+  onConn(ok) { const c = $('#demoChip'); c.textContent = '연결 중…'; c.hidden = ok; },
   onPost(type, n, o) {
     if (type === 'INSERT') addPost(n);
     else if (type === 'DELETE') removePost(o.id);
@@ -331,7 +336,7 @@ const init = await initData({
   onStep(i) { state.step = i; state.rerender && state.rerender(); },
   onOnline(n) { $('#onlineCount').textContent = String(n); },
 });
-$('#demoChip').hidden = !isDemo();
+if (isDemo()) { $('#demoChip').textContent = '미리보기'; $('#demoChip').hidden = false; }
 for (const p of init.players) upsertPlayer(p);
 state.posts = init.posts;
 state.posts.forEach((p) => state.saidPosts.add(p.id));

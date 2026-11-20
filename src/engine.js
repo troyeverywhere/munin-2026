@@ -21,6 +21,11 @@ export function createEngine(container, { view = 'phone' } = {}) {
   renderer.toneMappingExposure = 1.05;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
+  // 폰을 오래 잠갔다 켜면 그래픽이 날아갈 수 있음 → 그때는 새로고침(입장 정보는 그대로 유지됨)
+  let glLost = false;
+  renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); glLost = true; setTimeout(() => { if (glLost && !document.hidden) location.reload(); }, 3000); });
+  renderer.domElement.addEventListener('webglcontextrestored', () => location.reload());
+  document.addEventListener('visibilitychange', () => { if (glLost && !document.hidden) location.reload(); });
 
   const { scene, hitTargets, ground } = createWorld({ quality: lowEnd ? 'low' : 'high' });
   const camera = new THREE.PerspectiveCamera(isPhone ? 42 : 30, 1, 0.1, 200);
