@@ -148,3 +148,22 @@ textarea.input { resize: none; min-height: 96px; line-height: 1.5; }
 
 .thanks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .thanks span { background: #fbeee2; border-radius: 999px; padding: 6px 11px; font-size: 14px; font-weight: 600; }
+
+.stage-bar { background: var(--wood); color: #fbefd8; text-align: center; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 4px 0; margin: 0 22% 8px; }
+.net-map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
+.net-cell { background: #f4ebdc; border-radius: 12px; padding: 8px 4px; text-align: center; }
+.net-cell b { display: block; font-size: 13.5px; }
+.net-cell span { font-size: 11px; color: var(--ink-2); }
+.net-cell.mine { background: var(--accent); color: #fff; }
+.net-cell.mine span { color: #fde4dc; }
+.net-table { border-top: 1px solid var(--line); padding: 10px 0; }
+.net-table:first-of-type { margin-top: 8px; }
+.net-table summary { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; cursor: pointer; list-style: none; }
+.net-table summary::-webkit-details-marker { display: none; }
+.net-table summary b { font-size: 15px; }
+.net-table summary span { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+.net-table.mine summary b { color: var(--accent); }
+.thanks span.me { background: var(--accent); color: #fff; }
+.after > div { display: flex; gap: 12px; padding: 6px 0; font-size: 15px; }
+.after b { width: 34px; flex-shrink: 0; color: var(--ink-2); font-size: 13.5px; padding-top: 1px; }
+.after a { color: var(--accent); font-weight: 700; font-size: 13.5px; margin-left: 8px; }

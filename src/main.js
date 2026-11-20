@@ -193,22 +193,48 @@ function openInfo() {
     const mine = state.me ? state.players.get(state.me) : null;
     const seat = mine ? seatFor(mine.gen) : null;
     body.replaceChildren(
-      h('div', { class: 'sec' }, h('div', { class: 'meta-row' }, h('span', {}, EVENT.date), h('span', {}, '·'), h('span', {}, EVENT.time))),
+      h('div', { class: 'sec' }, h('div', { class: 'meta-row' }, h('span', {}, EVENT.date), h('span', {}, '·'), h('span', {}, EVENT.time)), h('div', { class: 'meta-row' }, h('span', {}, EVENT.place)), EVENT.host ? h('div', { class: 'meta-row' }, h('span', {}, '사회 ' + EVENT.host)) : null),
       h('div', { class: 'sec' }, h('h3', {}, '식순'),
         h('ol', { class: 'timeline' }, ...PROGRAM.map((p, i) => h('li', { class: i === state.step ? 'now' : '' },
           h('span', { class: 't' }, p.time, p.end ? h('small', {}, '~ ' + p.end) : null),
           h('div', {}, h('div', { class: 'ti' }, p.title, i === state.step ? h('span', { class: 'now-badge' }, '지금') : null), p.desc ? h('div', { class: 'd' }, p.desc) : null))))),
-      h('div', { class: 'sec' }, h('h3', {}, '1부 자리 안내'),
+      h('div', { class: 'sec' }, h('h3', {}, '1~2부 자리 안내'),
+        h('div', { class: 'stage-bar' }, '단상'),
         h('div', { class: 'seats' }, ...SEATING.map((s) => h('div', { class: 'seat' + (seat === s ? ' mine' : '') }, h('b', {}, s.line), h('span', {}, s.who)))),
-        h('p', { class: 'note' }, seat ? `${genLabel(mine.gen)}은 ${seat.line} 근처에 앉으시면 됩니다. 정해진 자리는 아니에요.` : '학번대별로 느슨하게 나눴어요. 정해진 자리는 아니에요.')),
-      h('div', { class: 'sec' }, h('h3', {}, '3부 관심사별 네트워킹'), NETWORKING.confirmed ? null : h('div', { class: 'placeholder' }, NETWORKING.note)),
-      h('div', { class: 'sec' }, h('h3', {}, '뒤풀이'), h('div', { class: 'placeholder' }, AFTER.text)),
+        h('p', { class: 'note' }, seat ? `${genLabel(mine.gen)}은 '${seat.line}' 테이블에 앉으시면 됩니다.` : '학번대별로 테이블이 나뉘어 있어요.')),
+      h('div', { class: 'sec' }, h('h3', {}, '3부 관심사별 네트워킹'), networkingBody(mine)),
+      h('div', { class: 'sec' }, h('h3', {}, '뒤풀이'), afterBody()),
       h('div', { class: 'sec' }, h('h3', {}, 'Thanks to'), thanksBody()),
     );
   };
   render();
   openSheet('안내소', body, { tall: true, tab: 'info' });
   state.rerender = render;
+}
+function networkingBody(mine) {
+  if (!NETWORKING.confirmed) return h('div', { class: 'placeholder' }, NETWORKING.note);
+  const myName = mine ? mine.name.trim() : '';
+  const isMine = (t) => !!myName && (t.mod === myName || t.members.includes(myName));
+  const mineTables = NETWORKING.tables.filter(isMine);
+  return h('div', {},
+    h('p', { class: 'note', style: 'margin-top:0' }, NETWORKING.note),
+    h('div', { class: 'stage-bar' }, '단상'),
+    h('div', { class: 'net-map' }, ...NETWORKING.layout.map((n) => {
+      const t = NETWORKING.tables.find((x) => x.short === n);
+      return h('div', { class: 'net-cell' + (t && isMine(t) ? ' mine' : '') }, h('b', {}, n), t ? h('span', {}, '모더레이터 ' + t.mod) : null);
+    })),
+    mineTables.length ? h('p', { class: 'note' }, `${myName}님 이름은 ${mineTables.map((t) => `'${t.name}'`).join(', ')} 테이블 명단에 있어요.`) : null,
+    ...NETWORKING.tables.map((t) => h('details', { class: 'net-table' + (isMine(t) ? ' mine' : ''), open: isMine(t) },
+      h('summary', {}, h('b', {}, t.name), h('span', {}, `모더레이터 ${t.mod} · ${t.members.length}명 ▾`)),
+      h('div', { class: 'thanks' }, ...t.members.map((n) => h('span', { class: n === myName ? 'me' : null }, n))))),
+  );
+}
+function afterBody() {
+  if (!AFTER.confirmed) return h('div', { class: 'placeholder' }, AFTER.text);
+  return h('div', { class: 'after' },
+    h('div', {}, h('b', {}, '장소'), h('span', {}, AFTER.place, h('a', { href: AFTER.map, target: '_blank', rel: 'noopener' }, '지도 보기'))),
+    h('div', {}, h('b', {}, '시간'), h('span', {}, AFTER.time)),
+    AFTER.note ? h('p', { class: 'note' }, AFTER.note) : null);
 }
 function thanksBody() {
   if (!THANKS.confirmed) return h('div', { class: 'placeholder' }, THANKS.note);

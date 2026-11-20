@@ -6,37 +6,68 @@
 <title>진행 장표 · 2026 문인 동문회</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-  /* 임시 장표입니다. 실제 장표가 완성되면 이 파일을 바꾸면 됩니다. */
-  :root { --ink: #3b2a1e; --accent: #c64530; --paper: #fffaf2; }
-  html, body { margin: 0; height: 100%; background: #f3e4cf; font-family: "Pretendard Variable", Pretendard, sans-serif; color: var(--ink); }
+  /* 진행 장표 (11/20 v4 PDF). 장을 바꾸려면 public/slides/ 의 이미지와 아래 SLIDES 목록을 고칩니다. */
+  html, body { margin: 0; height: 100%; background: #1f3a45; font-family: "Pretendard Variable", Pretendard, sans-serif; color: #fff; }
   .deck { height: 100%; display: flex; flex-direction: column; }
-  .stage { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px; }
-  .slide { width: 100%; max-width: 960px; aspect-ratio: 16 / 9; background: var(--paper); border-radius: 18px; box-shadow: 0 10px 30px rgba(70,45,20,.15); display: none; flex-direction: column; justify-content: center; padding: 6% 7%; box-sizing: border-box; }
-  .slide.on { display: flex; }
-  .slide h1 { font-size: clamp(26px, 6vw, 64px); margin: 0 0 .3em; letter-spacing: -1px; }
-  .slide h2 { font-size: clamp(20px, 4vw, 42px); margin: 0 0 .6em; }
-  .slide p, .slide li { font-size: clamp(14px, 2.4vw, 26px); line-height: 1.5; margin: .2em 0; }
-  .slide .tag { color: var(--accent); font-weight: 800; font-size: clamp(12px, 2vw, 20px); margin-bottom: 1em; }
-  .bar { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 8px 0 14px; }
-  .bar button { width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--paper); font-size: 22px; box-shadow: 0 4px 14px rgba(70,45,20,.15); cursor: pointer; }
-  .bar span { min-width: 60px; text-align: center; font-variant-numeric: tabular-nums; }
+  .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 12px; touch-action: pan-y; user-select: none; }
+  .stage img { max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; object-fit: contain; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.3); background: #2b4c55; }
+  .bar { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 6px 0 14px; }
+  .bar button { width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 24px; cursor: pointer; }
+  .bar button:disabled { opacity: .35; }
+  .bar span { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
 </style>
 </head>
 <body>
 <div class="deck">
-  <div class="stage">
-    <section class="slide on"><div class="tag">[임시 장표]</div><h1>2026 문인 동문회</h1><p>연희관 앞마당에 오신 것을 환영합니다</p></section>
-    <section class="slide"><h2>오늘의 순서</h2><ul><li>18:00 접수 및 아이스 브레이킹</li><li>18:10 1부 · 식사</li><li>19:00 2부 · 소식나눔 &amp; 럭키드로우</li><li>19:30 3부 · 관심사별 네트워킹</li><li>20:50 마무리</li></ul></section>
-    <section class="slide"><h2>소식나눔</h2><p>폰으로 남긴 소식을 함께 읽어봅니다.</p></section>
-  </div>
+  <div class="stage" id="stage"><img id="img" alt=""></div>
   <div class="bar"><button id="prev" aria-label="이전 장">‹</button><span id="pg"></span><button id="next" aria-label="다음 장">›</button></div>
 </div>
 <script>
-  const s = [...document.querySelectorAll('.slide')]; let i = 0;
-  const show = () => { s.forEach((x, k) => x.classList.toggle('on', k === i)); document.getElementById('pg').textContent = `${i + 1} / ${s.length}`; };
-  document.getElementById('prev').onclick = () => { i = Math.max(0, i - 1); show(); };
-  document.getElementById('next').onclick = () => { i = Math.min(s.length - 1, i + 1); show(); };
-  addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') document.getElementById('next').click(); if (e.key === 'ArrowLeft') document.getElementById('prev').click(); });
+  const SLIDES = [
+    '2026 문화인류학과 동문회 · 2026.11.21. SAT 6PM · 연세 백양누리 그랜드볼룸B',
+    '일정 안내',
+    '1~2부 자리 안내',
+    '3부 자리 안내 (명단)',
+    '3부 자리 안내 (테이블 배치)',
+    '2부 행사 · 소식나눔·럭키드로우',
+    '잠시 후 소식 나눔과 네트워킹 행사가 시작됩니다',
+    '사회자 소개 · 방창훈',
+    '공식 인사 · 교수님 소개',
+    '공식 인사 · 문화인류학과 학생회',
+    '공식 인사 · 문화인류학과 동문회',
+    '감사 인사 · 동문회를 지원해주신 분들',
+    'LUCKY DRAW',
+    '문인 동문회 웹사이트 안내',
+    '3부 행사 · 관심사별 네트워킹',
+    '자리 안내 (테이블 배치)',
+    '자리 안내 (명단)',
+    '마무리 인사 · 문화인류학과 동문회',
+    '뒤풀이 안내',
+    '2028 문화인류학과 20주년에 다시 만나요',
+  ];
+  const src = (k) => `./${String(k + 1).padStart(2, '0')}.webp`;
+  const img = document.getElementById('img');
+  let i = Math.max(0, Math.min(SLIDES.length - 1, (parseInt(location.hash.slice(1), 10) || 1) - 1));
+  const show = () => {
+    img.src = src(i); img.alt = SLIDES[i];
+    document.getElementById('pg').textContent = `${i + 1} / ${SLIDES.length}`;
+    document.getElementById('prev').disabled = i === 0;
+    document.getElementById('next').disabled = i === SLIDES.length - 1;
+    history.replaceState(null, '', '#' + (i + 1));
+    [i - 1, i + 1].forEach((k) => { if (k >= 0 && k < SLIDES.length) new Image().src = src(k); });
+  };
+  const go = (d) => { i = Math.max(0, Math.min(SLIDES.length - 1, i + d)); show(); };
+  document.getElementById('prev').onclick = () => go(-1);
+  document.getElementById('next').onclick = () => go(1);
+  addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); }
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+  });
+  // 밀어서 넘기기
+  let sx = null;
+  const st = document.getElementById('stage');
+  st.addEventListener('pointerdown', (e) => { sx = e.clientX; });
+  st.addEventListener('pointerup', (e) => { if (sx === null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1); });
   show();
 </script>
 </body>

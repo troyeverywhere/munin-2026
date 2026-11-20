@@ -4,7 +4,8 @@
 export const EVENT = {
   date: '2026년 11월 21일 (토)',
   time: '18:00 ~ 21:00',
-  place: '[장소 확정 전]',
+  place: '연세 백양누리 그랜드볼룸B',
+  host: '방창훈',
 };
 
 // 식순 (11/17 변경)
@@ -13,33 +14,46 @@ export const PROGRAM = [
   { time: '18:10', end: '19:00', title: '1부 · 식사', desc: '' },
   { time: '19:00', end: '19:30', title: '2부 · 소식나눔 & 럭키드로우', desc: '교수님 인사, 동문 소식나눔' },
   { time: '19:30', end: '20:50', title: '3부 · 관심사별 네트워킹', desc: '분야별 테이블로 이동해 주세요' },
-  { time: '20:50', end: '21:00', title: '마무리', desc: '' },
+  { time: '20:50', end: '21:00', title: '마무리', desc: '장내 정리 및 뒤풀이 안내' },
 ];
 
-// 1부 자리 안내 (세로줄 3개, 느슨한 학번 구분)
+// 1~2부 자리 안내 (진행 장표 v4) — 단상을 위에 두고 왼쪽부터
 export const SEATING = [
-  { line: '1번 줄', who: '13학번 이전' },
-  { line: '2번 줄', who: '14 ~ 18학번' },
-  { line: '3번 줄', who: '19학번 이후' },
+  { line: '08~13학번', who: '테이블 4개', max: 13 },
+  { line: '14~18학번', who: '테이블 3개', max: 18 },
+  { line: '19~26학번', who: '테이블 3개', max: 99 },
 ];
 export function seatFor(gen) {
   if (!/^\d{2}$/.test(gen)) return null;
-  const n = +gen;
-  if (n <= 13) return SEATING[0];
-  if (n <= 18) return SEATING[1];
-  return SEATING[2];
+  return SEATING.find((s) => +gen <= s.max) || null;
 }
 
-// 3부 네트워킹 분야 [확정 전]
+// 3부 관심사별 네트워킹 (진행 장표 v4)
+// layout: 장표의 테이블 배치 순서 (단상 기준, 3칸씩)
 export const NETWORKING = {
-  confirmed: false,
-  note: '분야와 모더레이터 소개는 확정되면 올라옵니다.',
-  tables: [],
+  confirmed: true,
+  note: '모더레이터와 함께 관심사별 테이블에서 이야기 나눠요.',
+  layout: ['교수님', '광고·마케팅', '문화예술', '소셜', '운동', '재무·법무', '전략A (B2B)', '전략B (B2C)', '창업·IT', '학계'],
+  tables: [
+    { name: '광고·마케팅', short: '광고·마케팅', mod: '차연지', members: ['김민서', '김민지', '남유민', '박소윤', '서윤아', '차윤지', '최서영', '허진우', '황영선'] },
+    { name: '문화예술', short: '문화예술', mod: '백경하', members: ['나강민', '백경하', '송나희', '송하람', '신예진', '이호민', '제갈유민', '채재윤', '최수현', '하다솔', '한주연'] },
+    { name: '소셜', short: '소셜', mod: '임주연', members: ['공선주', '공예영', '박연준', '서민영', '손연우', '안하경', '윤성지', '이수헌', '이하현', '최민준'] },
+    { name: '운동', short: '운동', mod: '김혜연', members: ['강나리', '국채연', '권나영', '김혜연', '박소연', '방창훈', '이나윤', '최수현'] },
+    { name: '재무·법무', short: '재무·법무', mod: '임윤아', members: ['김여진', '김윤준', '김혜진', '박세영', '임윤아', '임주연', '정재헌', '조호일', '지송은', '최현민', '홍예슬', '황준성'] },
+    { name: '전략·비즈니스 A (B2B)', short: '전략A (B2B)', mod: '이다연', members: ['김소윤', '김태연', '심이', '이준성', '이태준', '전지훈'] },
+    { name: '전략·비즈니스 B (B2C)', short: '전략B (B2C)', mod: '고도연', members: ['김성현', '김우진', '민지완', '박현진', '손하은'] },
+    { name: '창업·IT', short: '창업·IT', mod: '김지영', members: ['김승원', '김찬영', '남용우', '정선우', '조남웅'] },
+    { name: '학계', short: '학계', mod: '최희정', members: ['김도윤', '김자연', '김정래', '김지담', '박규현', '박진리', '변다희', '이예인', '이준영', '최희정'] },
+  ],
 };
 
+// 뒤풀이 (진행 장표 v4)
 export const AFTER = {
-  confirmed: false,
-  text: '뒤풀이 장소는 예약되면 안내드립니다.',
+  confirmed: true,
+  place: '신촌 현명포차',
+  time: '21시부터 (자율 혹은 함께 이동)',
+  map: 'https://map.naver.com/p/search/' + encodeURIComponent('신촌 현명포차'),
+  note: '[확정 전] 정산 방식은 따로 안내드립니다.',
 };
 
 // Thanks to — 동문회를 지원해 주신 분들 (11/20 확정)
