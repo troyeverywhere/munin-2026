@@ -155,12 +155,6 @@ body.slides-fs .tabbar, body.slides-fs .scrim { display: none; }
 .thanks span { background: #fbeee2; border-radius: 999px; padding: 6px 11px; font-size: 14px; font-weight: 600; }
 
 .stage-bar { background: var(--wood); color: #fbefd8; text-align: center; font-size: 12px; font-weight: 700; border-radius: 8px; padding: 4px 0; margin: 0 22% 8px; }
-.net-map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-bottom: 6px; }
-.net-cell { background: #f4ebdc; border-radius: 12px; padding: 8px 4px; text-align: center; }
-.net-cell b { display: block; font-size: 13.5px; }
-.net-cell span { font-size: 11px; color: var(--ink-2); }
-.net-cell.mine { background: var(--accent); color: #fff; }
-.net-cell.mine span { color: #fde4dc; }
 .net-table { border-top: 1px solid var(--line); padding: 10px 0; }
 .net-table:first-of-type { margin-top: 8px; }
 .net-table summary { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; cursor: pointer; list-style: none; }
@@ -172,3 +166,23 @@ body.slides-fs .tabbar, body.slides-fs .scrim { display: none; }
 .after > div { display: flex; gap: 12px; padding: 6px 0; font-size: 15px; }
 .after b { width: 34px; flex-shrink: 0; color: var(--ink-2); font-size: 13.5px; padding-top: 1px; }
 .after a { color: var(--accent); font-weight: 700; font-size: 13.5px; margin-left: 8px; }
+
+/* ---- 장표 느낌의 자리 배치도 ---- */
+.hall { background: linear-gradient(100deg, #2d5150, #1f3552); border-radius: 18px; padding: 12px 10px 14px; color: #fff; margin: 4px 0 8px; }
+.hall-stage { background: #fff; color: #1d5fd0; font-weight: 800; font-size: 13px; text-align: center; border-radius: 4px; padding: 5px 0; margin: 0 24% 14px; }
+.hall .dot { width: 46px; height: 46px; border-radius: 50%; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #1d5fd0; font-weight: 800; font-size: 11px; line-height: 1.15; text-align: center; letter-spacing: -0.3px; flex-shrink: 0; }
+.hall .dot.big { width: 62px; height: 62px; font-size: 12.5px; }
+.seat-map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) 58px; gap: 8px 4px; align-items: center; }
+.seat-single { display: flex; justify-content: center; }
+.seat-box { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; justify-items: center; border: 2px dashed rgba(255, 255, 255, 0.85); border-radius: 6px; padding: 5px 0; }
+.seat-label { padding-left: 4px; line-height: 1.15; }
+.seat-label b { display: block; font-size: 15px; font-weight: 800; letter-spacing: -0.3px; }
+.seat-label small { font-size: 11.5px; font-weight: 700; opacity: 0.85; }
+.seat-box.mine { border-color: #ffd36b; background: rgba(255, 211, 107, 0.16); }
+.seat-box.mine .dot, .seat-single.mine .dot { box-shadow: 0 0 0 3px #ffd36b; }
+.seat-label.mine { color: #ffd36b; }
+.net-map { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 4px; margin: 0; }
+.net-cell { background: none; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.net-cell .mod { font-size: 10.5px; color: #7fe0cf; font-weight: 600; min-height: 13px; white-space: nowrap; }
+.net-cell.mine .dot { box-shadow: 0 0 0 3px #ffd36b; }
+.net-cell.mine .mod { color: #ffd36b; }

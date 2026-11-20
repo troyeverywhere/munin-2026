@@ -200,8 +200,7 @@ function openInfo() {
           h('span', { class: 't' }, p.time, p.end ? h('small', {}, '~ ' + p.end) : null),
           h('div', {}, h('div', { class: 'ti' }, p.title, i === state.step ? h('span', { class: 'now-badge' }, '지금') : null), p.desc ? h('div', { class: 'd' }, p.desc) : null))))),
       h('div', { class: 'sec' }, h('h3', {}, '1~2부 자리 안내'),
-        h('div', { class: 'stage-bar' }, '단상'),
-        h('div', { class: 'seats' }, ...SEATING.map((s) => h('div', { class: 'seat' + (seat === s ? ' mine' : '') }, h('b', {}, s.line), h('span', {}, s.who)))),
+        seatMap(seat),
         h('p', { class: 'note' }, seat ? `${genLabel(mine.gen)}은 '${seat.line}' 테이블에 앉으시면 됩니다.` : '학번대별로 테이블이 나뉘어 있어요.')),
       h('div', { class: 'sec' }, h('h3', {}, '3부 관심사별 네트워킹'), networkingBody(mine)),
       h('div', { class: 'sec' }, h('h3', {}, '뒤풀이'), afterBody()),
@@ -212,6 +211,24 @@ function openInfo() {
   openSheet('안내소', body, { tall: true, tab: 'info' });
   state.rerender = render;
 }
+// 장표처럼: 원 안 글자 두 줄
+function circleLabel(n) {
+  const m = { '광고·마케팅': ['광고', '마케팅'], '문화예술': ['문화', '예술'], '재무·법무': ['재무', '법무'], '전략A (B2B)': ['전략A', '(B2B)'], '전략B (B2C)': ['전략B', '(B2C)'], '창업·IT': ['창업', 'IT'] }[n] || [n];
+  return m.map((x) => h('span', {}, x));
+}
+// 1~2부 자리: 장표(3번)와 같은 배치. 단상 → 앞줄(교수님 + 09~14) → 15~22 → 23~26 → 남는 테이블 1개
+function seatMap(seat) {
+  const [prof, g1, g2, g3] = SEATING;
+  const dots = (n) => Array.from({ length: n }, () => h('div', { class: 'dot' }));
+  const box = (g, n, span) => h('div', { class: 'seat-box' + (seat === g ? ' mine' : ''), style: `grid-column: span ${span}` }, ...dots(n));
+  const label = (g) => h('div', { class: 'seat-label' + (seat === g ? ' mine' : '') }, h('b', {}, g.line.replace('학번', '')), h('small', {}, '학번'));
+  return h('div', { class: 'hall' }, h('div', { class: 'hall-stage' }, '단상'),
+    h('div', { class: 'seat-map' },
+      h('div', { class: 'seat-single' + (seat === prof ? ' mine' : '') }, h('div', { class: 'dot' }, h('span', {}, '교수님'))), box(g1, 2, 2), label(g1),
+      box(g2, 3, 3), label(g2),
+      box(g3, 3, 3), label(g3),
+      h('div', { class: 'seat-single' }, h('div', { class: 'dot' })), h('div', {}), h('div', {}), h('div', {})));
+}
 function networkingBody(mine) {
   if (!NETWORKING.confirmed) return h('div', { class: 'placeholder' }, NETWORKING.note);
   const myName = mine ? mine.name.trim() : '';
@@ -219,11 +236,14 @@ function networkingBody(mine) {
   const mineTables = NETWORKING.tables.filter(isMine);
   return h('div', {},
     h('p', { class: 'note', style: 'margin-top:0' }, NETWORKING.note),
-    h('div', { class: 'stage-bar' }, '단상'),
-    h('div', { class: 'net-map' }, ...NETWORKING.layout.map((n) => {
-      const t = NETWORKING.tables.find((x) => x.short === n);
-      return h('div', { class: 'net-cell' + (t && isMine(t) ? ' mine' : '') }, h('b', {}, n), t ? h('span', {}, '모더레이터 ' + t.mod) : null);
-    })),
+    h('div', { class: 'hall' }, h('div', { class: 'hall-stage' }, '단상'),
+      h('div', { class: 'net-map' }, ...NETWORKING.layout.map((n) => {
+        const t = NETWORKING.tables.find((x) => x.short === n);
+        const on = t ? isMine(t) : !!(mine && mine.gen === '교수' && n === '교수님');
+        return h('div', { class: 'net-cell' + (on ? ' mine' : '') },
+          h('div', { class: 'dot big' }, ...circleLabel(n)),
+          h('span', { class: 'mod' }, t ? '모더레이터 ' + t.mod : ''));
+      }))),
     mineTables.length ? h('p', { class: 'note' }, `${myName}님 이름은 ${mineTables.map((t) => `'${t.name}'`).join(', ')} 테이블 명단에 있어요.`) : null,
     ...NETWORKING.tables.map((t) => h('details', { class: 'net-table' + (isMine(t) ? ' mine' : ''), open: isMine(t) },
       h('summary', {}, h('b', {}, t.name), h('span', {}, `모더레이터 ${t.mod} · ${t.members.length}명 ▾`)),
