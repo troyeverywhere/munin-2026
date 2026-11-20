@@ -52,11 +52,15 @@ export function createEngine(container, { view = 'phone' } = {}) {
     controls.update();
   }
 
+  // 카톡 인앱 브라우저 등은 처음에 화면 높이를 잘못 알려줌 → 크기가 바뀔 때마다 다시 맞춤
+  let sizeW = 0, sizeH = 0;
   function resize() {
     const w = container.clientWidth, h = container.clientHeight;
+    if (!w || !h) return;
+    sizeW = w; sizeH = h;
     renderer.setSize(w, h, false);
-    renderer.domElement.style.width = w + 'px';
-    renderer.domElement.style.height = h + 'px';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
     camera.aspect = w / h;
     // keep the whole width of the garden in view on narrow portrait screens
     if (!isPhone) camera.fov = w / h < 1.4 ? 38 : 30;
@@ -64,6 +68,9 @@ export function createEngine(container, { view = 'phone' } = {}) {
   }
   resize();
   addEventListener('resize', resize);
+  if (window.visualViewport) visualViewport.addEventListener('resize', resize);
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(container);
+  addEventListener('orientationchange', () => setTimeout(resize, 300));
 
   // ---- people ----
   const people = new Map();
@@ -203,6 +210,7 @@ export function createEngine(container, { view = 'phone' } = {}) {
   document.addEventListener('visibilitychange', () => { running = !document.hidden; if (running) { last = performance.now(); requestAnimationFrame(loop); } });
   function loop(now) {
     if (!running) return;
+    if (container.clientWidth !== sizeW || container.clientHeight !== sizeH) resize();
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     for (const [id, p] of people) {
       if (id !== myId && !p.target && now > p.nextWander && now - (remoteMoveAt.get(id) || 0) > 20000) {
