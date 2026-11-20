@@ -49,6 +49,7 @@ function openSheet(title, body, { foot = null, tall = false, cls = '', tab = nul
   setTab(tab || 'map');
 }
 function closeSheet(silent) {
+  document.body.classList.remove('slides-fs');
   $('#sheet').hidden = true; $('#scrim').hidden = true;
   state.rerender = null;
   if (sheetCleanup) { sheetCleanup(); sheetCleanup = null; }
@@ -243,9 +244,15 @@ function thanksBody() {
 
 // ---------- slides / people ----------
 function openSlides() {
-  const f = h('iframe', { class: 'slides-frame', src: './slides/', title: '진행 장표' });
+  const f = h('iframe', { class: 'slides-frame', src: './slides/', title: '진행 장표', allow: 'fullscreen', allowfullscreen: true });
   openSheet('진행 장표', f, { tall: true, cls: 'slides', tab: 'slides' });
+  sheetCleanup = () => document.body.classList.remove('slides-fs');
 }
+// 장표 안의 '전체화면' 버튼: 브라우저 전체화면이 안 되는 폰(아이폰 등)에서는 장표 창을 화면 가득 채움
+addEventListener('message', (e) => {
+  if (e.origin !== location.origin || !e.data || e.data.type !== 'slides-fs') return;
+  document.body.classList.toggle('slides-fs', !!e.data.on);
+});
 function openPeople() {
   const sel = h('select', { class: 'input filter', 'aria-label': '학번으로 찾기' }, h('option', { value: '' }, '전체 보기'));
   const gens = [...new Set([...state.players.values()].map((p) => p.gen))].sort((a, b) => order(a) - order(b));

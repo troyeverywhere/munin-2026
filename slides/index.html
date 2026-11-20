@@ -15,6 +15,12 @@
   .bar button { width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 24px; cursor: pointer; }
   .bar button:disabled { opacity: .35; }
   .bar .reset { width: auto; height: 36px; border-radius: 999px; padding: 0 14px; font-size: 13px; font-weight: 700; }
+  body.fs .hint { display: none; }
+  body.fs .stage { padding: 4px; }
+  body.fs .stage img { border-radius: 0; box-shadow: none; }
+  body.fs .bar { padding: 2px 0 calc(6px + env(safe-area-inset-bottom)); gap: 8px; }
+  body.fs .bar button { width: 40px; height: 40px; font-size: 20px; }
+  body.fs .bar .reset { width: auto; height: 34px; }
   .hint { text-align: center; font-size: 12px; opacity: .6; margin: -6px 0 10px; }
   .bar span { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
 </style>
@@ -22,7 +28,7 @@
 <body>
 <div class="deck">
   <div class="stage" id="stage"><img id="img" alt=""></div>
-  <div class="bar"><button id="prev" aria-label="이전 장">‹</button><span id="pg"></span><button id="next" aria-label="다음 장">›</button><button id="reset" class="reset" hidden>원래 크기</button></div>
+  <div class="bar"><button id="prev" aria-label="이전 장">‹</button><span id="pg"></span><button id="next" aria-label="다음 장">›</button><button id="reset" class="reset" hidden>원래 크기</button><button id="fs" class="reset" aria-label="전체화면">⛶ 전체화면</button></div>
   <div class="hint" id="hint">두 손가락으로 벌리거나 두 번 탭하면 크게 볼 수 있어요</div>
 </div>
 <script>
@@ -143,6 +149,39 @@
   st.addEventListener('wheel', (e) => { if (!e.ctrlKey && z === 1) return; e.preventDefault(); if (e.ctrlKey) zoomAt(z * Math.exp(-e.deltaY / 200), e.clientX, e.clientY); else { tx -= e.deltaX; ty -= e.deltaY; apply(); } }, { passive: false });
   // iOS 사파리가 페이지 전체를 확대하지 않게
   for (const ev of ['gesturestart', 'gesturechange']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
+  // ---- 전체화면 ----
+  // 1) 브라우저 전체화면(컴퓨터·안드로이드·아이패드) 2) 안 되면 사이트 안의 장표 창을 화면 가득(아이폰)
+  const fsBtn = document.getElementById('fs');
+  const inFrame = window.parent !== window;
+  const native = document.fullscreenEnabled || document.webkitFullscreenEnabled;
+  let pseudo = false;
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement) || pseudo;
+  const sync = () => {
+    const on = isFs();
+    document.body.classList.toggle('fs', on);
+    fsBtn.textContent = on ? '✕ 나가기' : '⛶ 전체화면';
+    setTimeout(apply, 50);
+  };
+  const setPseudo = (on) => { pseudo = on; if (inFrame) parent.postMessage({ type: 'slides-fs', on }, location.origin); sync(); };
+  fsBtn.onclick = async () => {
+    if (isFs()) {
+      if (pseudo) setPseudo(false);
+      else (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      return;
+    }
+    if (native) {
+      try {
+        const el = document.documentElement;
+        await (el.requestFullscreen ? el.requestFullscreen() : el.webkitRequestFullscreen());
+        try { await screen.orientation.lock('landscape'); } catch (e) {}
+        return;
+      } catch (e) { /* 막혀 있으면 아래로 */ }
+    }
+    setPseudo(true);
+  };
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+  addEventListener('keydown', (e) => { if (e.key === 'f' || e.key === 'F') fsBtn.click(); if (e.key === 'Escape' && pseudo) setPseudo(false); });
   show();
 </script>
 </body>
