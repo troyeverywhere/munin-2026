@@ -241,7 +241,7 @@ function thanksBody() {
   return h('div', {}, h('p', { class: 'note' }, THANKS.note), h('div', { class: 'thanks' }, ...THANKS.funders.map((n) => h('span', {}, n))), THANKS.luckyDraw.length ? h('p', { class: 'note' }, '럭키드로우 경품 후원: ' + THANKS.luckyDraw.join(' · ')) : null);
 }
 
-// ---------- slides / people / photos ----------
+// ---------- slides / people ----------
 function openSlides() {
   const f = h('iframe', { class: 'slides-frame', src: './slides/', title: '진행 장표' });
   openSheet('진행 장표', f, { tall: true, cls: 'slides', tab: 'slides' });
@@ -264,9 +264,6 @@ function openPeople() {
   state.rerender = render;
 }
 const order = (g) => (g === '교수' ? -1 : g === '게스트' ? 999 : (+g >= 80 ? +g - 100 : +g));
-function openPhotos() {
-  openSheet('사진관', h('div', {}, h('div', { class: 'placeholder' }, '사진관은 행사 당일 열려요. 오늘 찍은 사진을 여기에 올리면, 고른 사진을 동문회 사진 아카이브에도 남겨 둘게요.')));
-}
 function openThanks() { openSheet('Thanks to', h('div', {}, thanksBody())); }
 
 // ---------- wiring ----------
@@ -279,7 +276,7 @@ $('#composeBtn').onclick = openCompose;
 $('#homeView').onclick = () => engine.resetView();
 // iOS 사파리: 두 손가락으로 페이지 전체가 확대되는 것 막기 (맵 확대는 그대로 됨)
 for (const ev of ['gesturestart', 'gesturechange']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
-engine.on('place', (p) => ({ board: openBoard, info: openInfo, slides: openSlides, photos: openPhotos, thanks: openThanks })[p]());
+engine.on('place', (p) => ({ board: openBoard, info: openInfo, slides: openSlides, thanks: openThanks })[p]());
 engine.on('person', (id) => {
   const p = state.players.get(id); if (!p) return;
   if (id === state.me) return openJoin();

@@ -231,11 +231,13 @@ export function createEngine(container, { view = 'phone' } = {}) {
   }
   requestAnimationFrame(loop);
 
-  return {
+  const api = {
     renderer, scene, camera, people,
     addPlayer, removePlayer, say, remoteMove, walkMe, focus, resetView,
     setMe(id) { myId = id; },
     on(evt, fn) { handlers[evt] = fn; },
     myPos() { const p = people.get(myId); return p ? [p.pos.x, p.pos.y] : null; },
   };
+  if (location.hash === '#debug') window.__engine = { camera, controls, home };
+  return api;
 }

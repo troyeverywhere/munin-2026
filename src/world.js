@@ -364,18 +364,6 @@ export function createWorld({ quality = 'high' } = {}) {
     rbox(0.5, 0.18, 0.4, 0.03, '#efe2c8', tx - 0.6, 0.85, tz - 0.1);
     plate('안내소 · 식순', 1.9, 0.42, tx, 0.36, tz + 0.52, { tex: { w: 640, h: 140, size: 70, radius: 20 } });
   }
-  // ---- 사진관 booth ----
-  const BOOTH = { x: 10.5, z: 4.0 };
-  {
-    const { x: bx, z: bz } = BOOTH;
-    rbox(2.0, 1.9, 1.6, 0.12, '#3f7a8c', bx, 0.95, bz);
-    rbox(2.4, 0.28, 2.0, 0.08, '#2f5e6c', bx, 2.02, bz);
-    rbox(0.95, 0.62, 0.16, 0.08, '#f6efe2', bx, 1.15, bz + 0.82);
-    rbox(0.28, 0.14, 0.1, 0.03, '#f6efe2', bx - 0.2, 1.52, bz + 0.82);
-    cyl(0.21, 0.21, 0.14, '#2f3b44', bx, 1.15, bz + 0.92, { rx: Math.PI / 2, seg: 24 });
-    cyl(0.1, 0.1, 0.16, '#9fc3d0', bx, 1.15, bz + 0.93, { rx: Math.PI / 2, seg: 16 });
-    plate('사진관', 1.3, 0.3, bx, 2.02, bz + 1.01, { tex: { w: 420, h: 100, size: 62, fg: '#2f5e6c', radius: 16 } });
-  }
   // ---- Thanks to ----
   const MONU = { x: -10.2, z: 8.6 };
   {
@@ -417,6 +405,7 @@ export function createWorld({ quality = 'high' } = {}) {
   roundTree(13.8, 0.9, 1.0, ['#eba446', '#e58a3a', '#f0b850']);
   roundTree(-13.4, 11.2, 0.95, ['#c9512b', '#d9662f', '#b8452a']);
   roundTree(13.4, 11.6, 0.95, C.autumn);
+  roundTree(10.8, 4.2, 1.05, ['#c9512b', '#d9662f', '#e58a3a']); // 예전 사진관 자리
   roundTree(-11.0, -9.5, 0.9, ['#4b8a4a', '#5f9a4b']);
   roundTree(11.2, -9.6, 0.95, ['#eba446', '#e58a3a']);
 
@@ -475,7 +464,6 @@ export function createWorld({ quality = 'high' } = {}) {
     ['강당 · 진행 장표', 'slides', 2.4, 2.6, -1.3, [0, 2, -2.6], [4.2, 4, 1.6]],
     ['게시판', 'board', 0, 2.75, GZ, [0, 1, GZ], [2.2, 2, 1.4]],
     ['안내소 · 식순', 'info', TENT.x, 3.6, TENT.z, [TENT.x, 1.2, TENT.z], [3, 2.6, 2]],
-    ['사진관', 'photos', BOOTH.x, 3.0, BOOTH.z, [BOOTH.x, 1.1, BOOTH.z], [2.6, 2.4, 2.2]],
     ['Thanks to', 'thanks', MONU.x, 2.4, MONU.z, [MONU.x, 0.8, MONU.z], [2.2, 1.8, 1.4]],
   ];
   const hitTargets = [];
@@ -498,7 +486,7 @@ export function createWorld({ quality = 'high' } = {}) {
 // ---- where characters may stand ----
 const OBST = [
   [-12.0, 2.8, -9.0, 4.4], // tent
-  [9.3, 2.9, 11.7, 5.1],   // booth
+  [10.2, 3.6, 11.4, 4.8],  // tree (old booth spot)
   [-11.2, 8.1, -9.2, 9.1], // monument
   [4.2, 11.8, 7.0, 13.0],  // 26
   [-7.3, 11.6, -3.9, 13.2],// flower bed

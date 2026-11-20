@@ -2,25 +2,28 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>진행 장표 · 2026 문인 동문회</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   /* 진행 장표 (11/20 v4 PDF). 장을 바꾸려면 public/slides/ 의 이미지와 아래 SLIDES 목록을 고칩니다. */
   html, body { margin: 0; height: 100%; background: #1f3a45; font-family: "Pretendard Variable", Pretendard, sans-serif; color: #fff; }
   .deck { height: 100%; display: flex; flex-direction: column; }
-  .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 12px; touch-action: pan-y; user-select: none; }
-  .stage img { max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; object-fit: contain; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.3); background: #2b4c55; }
+  .stage { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 12px; touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden; }
+  .stage img { transform-origin: 0 0; will-change: transform; -webkit-user-drag: none; pointer-events: none; max-width: 100%; max-height: 100%; aspect-ratio: 16 / 9; object-fit: contain; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.3); background: #2b4c55; }
   .bar { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 6px 0 14px; }
   .bar button { width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; font-size: 24px; cursor: pointer; }
   .bar button:disabled { opacity: .35; }
+  .bar .reset { width: auto; height: 36px; border-radius: 999px; padding: 0 14px; font-size: 13px; font-weight: 700; }
+  .hint { text-align: center; font-size: 12px; opacity: .6; margin: -6px 0 10px; }
   .bar span { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
 </style>
 </head>
 <body>
 <div class="deck">
   <div class="stage" id="stage"><img id="img" alt=""></div>
-  <div class="bar"><button id="prev" aria-label="이전 장">‹</button><span id="pg"></span><button id="next" aria-label="다음 장">›</button></div>
+  <div class="bar"><button id="prev" aria-label="이전 장">‹</button><span id="pg"></span><button id="next" aria-label="다음 장">›</button><button id="reset" class="reset" hidden>원래 크기</button></div>
+  <div class="hint" id="hint">두 손가락으로 벌리거나 두 번 탭하면 크게 볼 수 있어요</div>
 </div>
 <script>
   const SLIDES = [
@@ -56,18 +59,90 @@
     history.replaceState(null, '', '#' + (i + 1));
     [i - 1, i + 1].forEach((k) => { if (k >= 0 && k < SLIDES.length) new Image().src = src(k); });
   };
-  const go = (d) => { i = Math.max(0, Math.min(SLIDES.length - 1, i + d)); show(); };
+  // ---- 확대 / 이동 ----
+  const st = document.getElementById('stage');
+  let z = 1, tx = 0, ty = 0;
+  const base = () => { const r = st.getBoundingClientRect(); return { x: r.left + img.offsetLeft, y: r.top + img.offsetTop, w: img.offsetWidth, h: img.offsetHeight }; };
+  const apply = () => {
+    const b = base();
+    if (z <= 1.001) { z = 1; tx = 0; ty = 0; }
+    else {
+      // 이미지가 화면 밖으로 너무 벗어나지 않게
+      const sw = st.clientWidth, sh = st.clientHeight, ox = img.offsetLeft, oy = img.offsetTop;
+      const W = b.w * z, H = b.h * z;
+      tx = W <= sw ? (sw - W) / 2 - ox : Math.min(-ox, Math.max(sw - W - ox, tx));
+      ty = H <= sh ? (sh - H) / 2 - oy : Math.min(-oy, Math.max(sh - H - oy, ty));
+    }
+    img.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`;
+    document.getElementById('reset').hidden = z === 1;
+  };
+  const zoomAt = (nz, cx, cy) => {
+    const b = base();
+    nz = Math.max(1, Math.min(5, nz));
+    const px = (cx - b.x - tx) / z, py = (cy - b.y - ty) / z;
+    tx = cx - b.x - px * nz; ty = cy - b.y - py * nz; z = nz; apply();
+  };
+  const resetZoom = () => { z = 1; apply(); };
+  document.getElementById('reset').onclick = resetZoom;
+  addEventListener('resize', apply);
+
+  const go = (d) => { const n = Math.max(0, Math.min(SLIDES.length - 1, i + d)); if (n !== i) { i = n; z = 1; show(); apply(); } };
   document.getElementById('prev').onclick = () => go(-1);
   document.getElementById('next').onclick = () => go(1);
   addEventListener('keydown', (e) => {
     if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1); }
     if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+    if (e.key === '0' || e.key === 'Escape') resetZoom();
   });
-  // 밀어서 넘기기
-  let sx = null;
-  const st = document.getElementById('stage');
-  st.addEventListener('pointerdown', (e) => { sx = e.clientX; });
-  st.addEventListener('pointerup', (e) => { if (sx === null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1); });
+
+  const pts = new Map();
+  let pinch = null, pan = null, swipe = null, lastTap = 0, lastTapXY = [0, 0];
+  st.addEventListener('pointerdown', (e) => {
+    st.setPointerCapture(e.pointerId);
+    pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pts.size === 2) {
+      const [a, b] = [...pts.values()];
+      pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, z, mx: (a[0] + b[0]) / 2, my: (a[1] + b[1]) / 2 };
+      pan = swipe = null;
+    } else if (pts.size === 1) {
+      if (z > 1) pan = { x: e.clientX, y: e.clientY, tx, ty };
+      swipe = { x: e.clientX, y: e.clientY, t: performance.now() };
+    }
+  });
+  st.addEventListener('pointermove', (e) => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && pts.size >= 2) {
+      const [a, b] = [...pts.values()];
+      const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+      tx += mx - pinch.mx; ty += my - pinch.my; pinch.mx = mx; pinch.my = my;
+      zoomAt(pinch.z * d / pinch.d, mx, my);
+    } else if (pan) {
+      tx = pan.tx + e.clientX - pan.x; ty = pan.ty + e.clientY - pan.y; apply();
+    }
+  });
+  const up = (e) => {
+    if (!pts.has(e.pointerId)) return;
+    pts.delete(e.pointerId);
+    if (pinch) { if (pts.size < 2) pinch = null; if (pts.size === 1 && z > 1) { const [p] = [...pts.values()]; pan = { x: p[0], y: p[1], tx, ty }; } return; }
+    if (swipe) {
+      const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y, quick = performance.now() - swipe.t < 300;
+      if (z === 1 && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(dx < 0 ? 1 : -1);
+      else if (quick && Math.hypot(dx, dy) < 10) {
+        const now = performance.now();
+        if (now - lastTap < 320 && Math.hypot(e.clientX - lastTapXY[0], e.clientY - lastTapXY[1]) < 40) { z > 1 ? resetZoom() : zoomAt(2.5, e.clientX, e.clientY); lastTap = 0; }
+        else { lastTap = now; lastTapXY = [e.clientX, e.clientY]; }
+      }
+    }
+    pan = swipe = null;
+  };
+  st.addEventListener('pointerup', up);
+  st.addEventListener('pointercancel', up);
+  // 노트북 트랙패드 핀치 / Ctrl+휠
+  st.addEventListener('wheel', (e) => { if (!e.ctrlKey && z === 1) return; e.preventDefault(); if (e.ctrlKey) zoomAt(z * Math.exp(-e.deltaY / 200), e.clientX, e.clientY); else { tx -= e.deltaX; ty -= e.deltaY; apply(); } }, { passive: false });
+  // iOS 사파리가 페이지 전체를 확대하지 않게
+  for (const ev of ['gesturestart', 'gesturechange']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
   show();
 </script>
 </body>
