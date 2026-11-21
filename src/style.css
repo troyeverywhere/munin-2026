@@ -186,3 +186,6 @@ body.slides-fs .tabbar, body.slides-fs .scrim { display: none; }
 .net-cell .mod { font-size: 10.5px; color: #7fe0cf; font-weight: 600; min-height: 13px; white-space: nowrap; }
 .net-cell.mine .dot { box-shadow: 0 0 0 3px #ffd36b; }
 .net-cell.mine .mod { color: #ffd36b; }
+
+.hall .dot.spare { background: #a8a8a8; }
+.after .btn.kakao { display: flex; align-items: center; justify-content: center; margin: 10px 0 4px; background: #fee500; color: #191919; text-decoration: none; font-weight: 800; font-size: 15px; }

@@ -227,7 +227,7 @@ function seatMap(seat) {
       h('div', { class: 'seat-single' + (seat === prof ? ' mine' : '') }, h('div', { class: 'dot' }, h('span', {}, '교수님'))), box(g1, 2, 2), label(g1),
       box(g2, 3, 3), label(g2),
       box(g3, 3, 3), label(g3),
-      h('div', { class: 'seat-single' }, h('div', { class: 'dot' })), h('div', {}), h('div', {}), h('div', {})));
+      h('div', { class: 'seat-single' }, h('div', { class: 'dot' })), h('div', { class: 'seat-single' }, h('div', { class: 'dot spare' })), h('div', {}), h('div', {})));
 }
 function networkingBody(mine) {
   if (!NETWORKING.confirmed) return h('div', { class: 'placeholder' }, NETWORKING.note);
@@ -243,7 +243,7 @@ function networkingBody(mine) {
         return h('div', { class: 'net-cell' + (on ? ' mine' : '') },
           h('div', { class: 'dot big' }, ...circleLabel(n)),
           h('span', { class: 'mod' }, t ? '모더레이터 ' + t.mod : ''));
-      }))),
+      }), h('div', { class: 'net-cell' }, h('div', { class: 'dot big spare' }), h('span', { class: 'mod' }, '')))),
     mineTables.length ? h('p', { class: 'note' }, `${myName}님 이름은 ${mineTables.map((t) => `'${t.name}'`).join(', ')} 테이블 명단에 있어요.`) : null,
     ...NETWORKING.tables.map((t) => h('details', { class: 'net-table' + (isMine(t) ? ' mine' : ''), open: isMine(t) },
       h('summary', {}, h('b', {}, t.name), h('span', {}, `모더레이터 ${t.mod} · ${t.members.length}명 ▾`)),
@@ -255,6 +255,7 @@ function afterBody() {
   return h('div', { class: 'after' },
     h('div', {}, h('b', {}, '장소'), h('span', {}, AFTER.place, h('a', { href: AFTER.map, target: '_blank', rel: 'noopener' }, '지도 보기'))),
     h('div', {}, h('b', {}, '시간'), h('span', {}, AFTER.time)),
+    AFTER.chat ? h('a', { class: 'btn kakao', href: AFTER.chat, target: '_blank', rel: 'noopener' }, '정산 오픈채팅방 들어가기') : null,
     AFTER.note ? h('p', { class: 'note' }, AFTER.note) : null);
 }
 function thanksBody() {
